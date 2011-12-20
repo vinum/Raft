@@ -1,0 +1,17 @@
+{
+  "author": "Tim D <admin@sharefarm.net> (sharefarm.net)",
+  "name": "Raft",
+  "description": "App contaner for node.js",
+  "version": "0.0.001",
+  "homepage": "raft.sharefarm.net",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:FLYBYME/Raft.git"
+  },
+  "main": "./index.js",
+  "engines": {
+    "node": "~0.6.6"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
