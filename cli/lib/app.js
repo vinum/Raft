@@ -76,22 +76,11 @@ app.buildClient = function buildClient(worker) {
 		url : 'http://' + worker.host + ':' + worker.port
 	});
 	//client.basicAuth(raft.config.user.username, raft.config.user.password);
-
 	return client
-}
-app.start = function start(worker, name, cb) {
-	var client = buildClient(worker)
-
-	client.get('/worker/app/start/' + name, cb)
-
-}
-app.stop = function stop(worker, name, cb) {
-	var client = buildClient(worker)
-
-	client.get('/worker/app/stop/' + name, cb)
-}
-app.restart = function restart(worker, name, cb) {
-	var client = buildClient(worker)
-
-	client.get('/worker/app/restart/' + name, cb)
-}
+};
+['stop', 'start', 'restart'].forEach(function(action) {
+	app[action] = function start(worker, name, cb) {
+		var client = buildClient(worker)
+		client.get('/worker/app/' + action + '/start/' + name, cb)
+	}
+}); 

@@ -8,6 +8,16 @@ var path = require('path');
 var fs = require('fs');
 var raft = require('../');
 
+var commands = {
+	app : require('./commands/app'),
+	system : require('./commands/system'),
+	user : require('./commands/user')
+}
+
+var help = {
+
+}
+
 /**
  *
  */
@@ -27,7 +37,11 @@ Cli.prototype.run = function(cmd, action, options) {
 	if (raft.config.user) {
 		//throw new Error('no userid please set using "raft-cli system login <username> <password>"')
 	}
-
-	require('./commands/' + cmd)[action](options)
+	if (commands[cmd]) {
+		if (commands[cmd][action]) {
+			return commands[cmd][action](options)
+		}
+	}
+	process.exit(1)
 
 }

@@ -70,60 +70,6 @@ function listApps(options) {
 }
 
 module.exports = {
-	stop : function(options) {
-		var name = options[0]
-		raft.mongo.WorkerStore.findOne({
-			name : name,
-			userid : raft.config.userid
-		}).run(function(err, app) {
-			raft.mongo.WorkerNodes.findOne({
-				key : app.worker.key
-			}).run(function(err, worker) {
-				stop(worker, name, function(err) {
-					if (err) {
-						raft.log.error('Raft-Cli', err)
-					}
-					process.exit(1)
-				})
-			})
-		})
-	},
-	start : function(options) {
-		var name = options[0]
-		raft.mongo.WorkerStore.findOne({
-			name : name,
-			userid : raft.config.userid
-		}).run(function(err, app) {
-			raft.mongo.WorkerNodes.findOne({
-				key : app.worker.key
-			}).run(function(err, worker) {
-				start(worker, name, function(err) {
-					if (err) {
-						raft.log.error('Raft-Cli', err)
-					}
-					process.exit(1)
-				})
-			})
-		})
-	},
-	restart : function(options) {
-		var name = options[0]
-		raft.mongo.WorkerStore.findOne({
-			name : name,
-			userid : raft.config.userid
-		}).run(function(err, app) {
-			raft.mongo.WorkerNodes.findOne({
-				key : app.worker.key
-			}).run(function(err, worker) {
-				restart(worker, name, function(err) {
-					if (err) {
-						raft.log.error('Raft-Cli', err)
-					}
-					process.exit(1)
-				})
-			})
-		})
-	},
 	list : listApps,
 	deploy : function(options) {
 
@@ -202,4 +148,25 @@ module.exports = {
 			})
 		})
 	}
-}
+};
+
+['start', 'stop', 'restart'].forEach(function(action) {
+	module.exports[action] = function(options) {
+		var name = options[0]
+		raft.mongo.WorkerStore.findOne({
+			name : name,
+			userid : raft.config.userid
+		}).run(function(err, app) {
+			raft.mongo.WorkerNodes.findOne({
+				key : app.worker.key
+			}).run(function(err, worker) {
+				appLib[action](worker, name, function(err) {
+					if (err) {
+						raft.log.error('Raft-Cli', err)
+					}
+					process.exit(1)
+				})
+			})
+		})
+	}
+})

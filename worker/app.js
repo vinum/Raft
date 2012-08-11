@@ -35,7 +35,7 @@ App.prototype.load = function(config, cb) {
 
 	if (this.tar) {
 		var self = this;
-		fs.unlink(self.config.paths.tar, function(err) {
+		fs.unlink(self.tar, function(err) {
 			self.tar = config.tar
 			self.userid = config.userid
 			self.name = config.name
@@ -174,7 +174,7 @@ api.get(rootRoute + '/list', function(req, res, next) {
  */
 var actions = ['start', 'stop', 'restart']
 log.info('Raft-Worker-App', 'Route: ' + rootRoute + '/kill/:name');
-api.get(rootRoute + '/:action/:name', function(req, res, next) {
+api.get(rootRoute + '/action/:action/:name', function(req, res, next) {
 
 	log.info('Raft-Worker-App', 'Route: ' + req.url);
 	var appName = req.params.name;
@@ -258,6 +258,8 @@ api.post(rootRoute + '/load/:name/:userid', function(req, res, next) {
 	var out = fs.createWriteStream(localTarPath)
 
 	req.pipe(out)
+	
+	
 	var app = apps.get(appName)
 
 	if (app === false) {
