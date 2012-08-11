@@ -50,7 +50,7 @@ Container.prototype.loadConfig = function(config, cb) {
 	this.config.paths.tar = config.tarPath;
 
 	this.config.paths.main = path.join(raft.config.paths.tmp, path.basename(config.tarPath, '.tar'));
-
+this.emit('config)
 	cb();
 }
 /**
@@ -224,7 +224,6 @@ Container.prototype.kill = function(cb) {
 	var env = this.env;
 	var self = this
 
-	fs.unlink(self.config.paths.tar, function(err) {
 
 		log.warn('Raft-Container', 'fs.unlink file: ' + self.config.paths.tar);
 		rimraf(self.config.paths.main, function(err) {
@@ -232,7 +231,6 @@ Container.prototype.kill = function(cb) {
 			log.warn('Raft-Container', 'rimraf file: ' + self.config.paths.main);
 			self.updateKillApp(cb)
 		})
-	})
 }
 /**
  *

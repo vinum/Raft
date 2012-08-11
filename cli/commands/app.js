@@ -1,71 +1,17 @@
 var restify = require('restify');
+var http = require("http");
 var raft = require('../../');
 var fs = require('fs');
 
-var http = require("http");
+var appLib = require('../lib/app')
 
-function buildClient(worker) {
-	var client = restify.createJsonClient({
-		url : 'http://' + worker.host + ':' + worker.port
-	});
-	//client.basicAuth(raft.config.user.username, raft.config.user.password);
-
-	return client
-}
-
-function postTar(worker, file, tarName, name, userid, cb) {
-	var req = http.request({
-		host : worker.host,
-		port : worker.port,
-		path : '/worker/app/loadPackage/' + name + '/' + tarName + '/' + userid,
-		method : "POST",
-		headers : {
-			//authorization : 'Basic ' + new Buffer(raft.config.user.username + ':' + raft.config.user.password).toString('base64')
-		}
-
-	}, function(res) {
-		res.setEncoding('utf8');
-		fs.unlink(file, function(err) {
-			
-		});
-		var body = '';
-		res.on('data', function(chunk) {
-			body += chunk;
-		});
-		res.once('end', function() {
-			if (res.statusCode === 500) {
-
-				cb(new Error(JSON.parse(body).message))
-			} else {
-
-				cb(null, JSON.parse(body))
-			}
-
-		})
-	});
-	fs.createReadStream(file).pipe(req);
-}
-
-function killApp(worker, app, cb) {
-	var client = restify.createJsonClient({
-		url : 'http://' + worker.host + ':' + worker.port
-	});
-	client.get('/worker/app/kill/' + app.name, cb)
-}
-
-function initTar(appPath, cb) {
-	var id = raft.utils.uuid()
-	var info = {
-		path : raft.config.paths.tmp + '/' + id + '.tar',
-		fileName : id
-	}
-	raft.utils.createTar(appPath, info.path, function(err) {
-		if (err)
-			cb(err)
-		else
-			cb(null, info)
-	})
-}
+//
+var postTar = appLib.postTar
+var buildClient = appLib.buildClient
+var initTar = appLib.initTar
+var start = appLib.start
+var stop = appLib.stop
+var restart = appLib.restart
 
 function listApps(options) {
 
@@ -89,7 +35,7 @@ function listApps(options) {
 	if (workerName == 'ANY') {
 		query = raft.mongo.WorkerNodes.find({});
 	} else {
-		query = raft.mongo.WorkerNodes.find({
+		query = raft.mongo.WorkerNodes.findOne({
 			name : workerName
 		});
 	}
@@ -124,8 +70,59 @@ function listApps(options) {
 }
 
 module.exports = {
-	distroy : function(options) {
-
+	stop : function(options) {
+		var name = options[0]
+		raft.mongo.WorkerStore.findOne({
+			name : name,
+			userid : raft.config.userid
+		}).run(function(err, app) {
+			raft.mongo.WorkerNodes.findOne({
+				key : app.worker.key
+			}).run(function(err, worker) {
+				stop(worker, name, function(err) {
+					if (err) {
+						raft.log.error('Raft-Cli', err)
+					}
+					process.exit(1)
+				})
+			})
+		})
+	},
+	start : function(options) {
+		var name = options[0]
+		raft.mongo.WorkerStore.findOne({
+			name : name,
+			userid : raft.config.userid
+		}).run(function(err, app) {
+			raft.mongo.WorkerNodes.findOne({
+				key : app.worker.key
+			}).run(function(err, worker) {
+				start(worker, name, function(err) {
+					if (err) {
+						raft.log.error('Raft-Cli', err)
+					}
+					process.exit(1)
+				})
+			})
+		})
+	},
+	restart : function(options) {
+		var name = options[0]
+		raft.mongo.WorkerStore.findOne({
+			name : name,
+			userid : raft.config.userid
+		}).run(function(err, app) {
+			raft.mongo.WorkerNodes.findOne({
+				key : app.worker.key
+			}).run(function(err, worker) {
+				restart(worker, name, function(err) {
+					if (err) {
+						raft.log.error('Raft-Cli', err)
+					}
+					process.exit(1)
+				})
+			})
+		})
 	},
 	list : listApps,
 	deploy : function(options) {
@@ -156,14 +153,19 @@ module.exports = {
 				}
 				initTar(appPath, function(err, info) {
 					postTar(worker, info.path, info.fileName, package.name, raft.config.userid, function(err, info) {
-						console.log(err, info)
 						if (err) {
 							raft.log.error('Raft-Cli', err)
+							process.exit(1)
 						} else {
 							raft.log.info('Raft-Cli', info)
-
+							start(worker, package.name, function(err) {
+								if (err) {
+									raft.log.error('Raft-Cli', err)
+								}
+								process.exit(1)
+							})
 						}
-						process.exit(1)
+
 					})
 				})
 			})
@@ -177,11 +179,9 @@ module.exports = {
 			}).run(function(err, app) {
 
 				if (!app) {
-					return newWorker(workerName, package)
-				}
-
-				if (app.running) {
-					return raft.mongo.WorkerNodes.findOne({
+					newWorker(workerName, package)
+				} else if (app.running) {
+					raft.mongo.WorkerNodes.findOne({
 						key : app.worker.key
 					}).run(function(err, worker) {
 						if (worker.online) {
@@ -198,7 +198,6 @@ module.exports = {
 					})
 				} else {
 					newWorker(workerName, package)
-
 				}
 			})
 		})

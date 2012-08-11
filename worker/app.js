@@ -16,20 +16,6 @@ var rootRoute = '/worker/app'
 
 var spawner = new Spawner();
 
-spawner.spawns = {}
-
-/*
- *
- */
-function testName(name, res, next) {
-	if (!spawner.spawns[name]) {
-		next(restify.InvalidArgumentError('no app with name "' + name + '"'))
-		return false
-	} else {
-		return spawner.spawns[name]
-	}
-}
-
 var App = function() {
 	events.EventEmitter.call(this);
 	this.running = false;
@@ -46,12 +32,21 @@ var App = function() {
 util.inherits(App, events.EventEmitter);
 
 App.prototype.load = function(config, cb) {
-	this.tar = config.tar
-	this.userid = config.userid
-	this.name = config.name
 
-	cb();
-
+	if (this.tar) {
+		var self = this;
+		fs.unlink(self.config.paths.tar, function(err) {
+			self.tar = config.tar
+			self.userid = config.userid
+			self.name = config.name
+			cb();
+		})
+	} else {
+		this.tar = config.tar
+		this.userid = config.userid
+		this.name = config.name
+		cb();
+	}
 }
 App.prototype.start = function(config, cb) {
 
@@ -252,11 +247,13 @@ api.get(rootRoute + '/info/:name', function(req, res, next) {
  */
 
 log.info('Raft-Worker-App', 'Route: ' + rootRoute + '/loadPackage/:name/:tar/:userid');
-api.post(rootRoute + '/load/:name/:tar/:userid', function(req, res, next) {
+api.post(rootRoute + '/load/:name/:userid', function(req, res, next) {
 	log.info('Raft-Worker-App', 'Route: ' + req.url);
 	var appName = req.params.name;
-	var tarName = req.params.tar;
 	var userid = req.params.userid;
+
+	var tarName = raft.utils.uuid();
+
 	var localTarPath = raft.config.paths.tmp + '/' + tarName + '.tar';
 	var out = fs.createWriteStream(localTarPath)
 
@@ -291,4 +288,4 @@ api.post(rootRoute + '/load/:name/:tar/:userid', function(req, res, next) {
 		})
 	})
 })
-module.exports = spawner;
+module.exports = apps;
