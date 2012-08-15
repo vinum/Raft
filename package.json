@@ -4,41 +4,27 @@
     "email": "price.timmy@gmail.com"
   },
   "name": "raft",
-  "version": "0.8.11",
+  "version": "0.8.12",
   "description": "PaaS",
   "main": "index.js",
   "bin": {
-    "raft-cli": "./bin/cli.js",
-    "raft-worker": "./bin/worker.js",
-    "raft-bouncy": "./bin/bouncy.js"
+    
   },
   "directories": {
     "example": "example"
   },
   "dependencies": {
-    "connect": "*",
-    "express": "2.x",
     "bouncy": "*",
     "mongoose": "2.x",
     "fstream": "*",
     "fstream-npm": "*",
     "tar": "*",
     "npm": "*",
-    "rimraf": "*",
-    "npmlog": "*",
-    "restify": "*",
-    "ini": "*",
-    "jqtpl": "*",
-    "multiparter": "*"
+    "rimraf": "*"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "BSD",
-  "_id": "raft@0.8.11",
-  "readme": "ERROR: No README.md file found!",
-  "dist": {
-    "shasum": "e3dead9f6432ea3a3b8988bfef6ecf489d432070"
-  },
-  "_from": "raft"
+  "readme": "ERROR: No README.md file found!"
 }
