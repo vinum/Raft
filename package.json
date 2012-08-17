@@ -1,30 +1,23 @@
 {
-  "author": {
-    "name": "Tim",
-    "email": "price.timmy@gmail.com"
-  },
-  "name": "raft",
-  "version": "0.8.12",
-  "description": "PaaS",
-  "main": "index.js",
-  "bin": {
-    
-  },
-  "directories": {
-    "example": "example"
-  },
-  "dependencies": {
-    "bouncy": "*",
-    "mongoose": "2.x",
-    "fstream": "*",
-    "fstream-npm": "*",
-    "tar": "*",
-    "npm": "*",
-    "rimraf": "*"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "license": "BSD",
-  "readme": "ERROR: No README.md file found!"
+	"name": "raft",
+	"version": "0.0.1",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"dependencies": {
+		"bouncy": "*",
+		"mongoose": "2.x",
+		"fstream": "*",
+		"fstream-npm": "*",
+		"tar": "*",
+		"npm": "*",
+		"rimraf": "*"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/FLYBYME/Raft.git"
+	},
+	"license": "BSD",
+	"description": "ERROR: No README.md file found!"
 }

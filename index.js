@@ -5,23 +5,25 @@
  * By: Timothy Dickinson
  *
  */
-var npmlog = require('npmlog')
 var events = require('events');
-var ini = require('ini')
 var fs = require('fs')
 var os = require('os')
 
 var tmpDir = os.tmpDir()
 
 exports = module.exports = new events.EventEmitter;
-
+/**
+ * tmp dir
+ */
 exports.tmpDir = tmpDir;
 
 /**
- *
+ * raft utils
  */
 exports.utils = require('./lib/utils');
-
+/**
+ *raft logger
+ */
 var Logger = exports.Logger = require('./lib/logger');
 /**
  * pipes
@@ -39,29 +41,56 @@ pipes.split = require('./lib/pipes/split');
 var rpc = exports.rpc = {};
 
 rpc.module = require('./lib/rpc/module');
+/**
+ * Froker
+ */
+var rpc = exports.fork = {};
 
+rpc.Forker = require('./lib/fork/forker');
+/**
+ * log
+ */
+exports.log = new Logger()
+console.log('link')
 /**
  *
- *
+ *raft config
  */
+exports.configPath = tmpDir + '/.raft'
 try {
-	exports.config = JSON.parse(fs.readFileSync(tmpDir + '/.raft', 'utf-8'));
+	exports.config = JSON.parse(fs.readFileSync(exports.configPath, 'utf-8'));
 } catch(e) {
-
-	fs.writeFileSync(tmpDir + '/.raft', JSON.stringify(exports.config = {
+	fs.writeFileSync(exports.configPath, JSON.stringify(exports.config = {
 		"mongodb" : {
 			"host" : "localhost",
 			"port" : "27017",
 			"path" : "/data/db"
 		},
 		"workerKey" : exports.utils.uuid(true),
+		"masterHost" : "mangoraft.com",
 		"paths" : {
 			"tmp" : tmpDir
 		}
 	}));
 }
+
 /**
- * data store
+ * globale ip
  */
-exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb).start();
+
+exports.ip = exports.utils.getIp().address;
+
+/**
+ * raft store
+ */
+exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb).once('open', function() {
+	if (Number(exports.ip.split('.').shift()) === 10) {
+		exports.utils.getExternalIp(function(err, ip) {
+			exports.ip = ip
+			exports.emit('ready')
+		});
+	} else {
+		exports.emit('ready')
+	}
+}).start();
 
