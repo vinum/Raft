@@ -56,7 +56,8 @@ console.log('link')
  *
  *raft config
  */
-exports.configPath = tmpDir + '/.raft'
+exports.configPath = process.env.HOME + "/.raft/.config"
+
 try {
 	exports.config = JSON.parse(fs.readFileSync(exports.configPath, 'utf-8'));
 } catch(e) {
@@ -69,11 +70,14 @@ try {
 		"workerKey" : exports.utils.uuid(true),
 		"masterHost" : "mangoraft.com",
 		"paths" : {
-			"tmp" : tmpDir
+			"tmp" : tmpDir,
+			"logs" : process.env.HOME + "/.raft/logs",
+			"node" : process.env.HOME + "/.raft/node",
+			"worker" : process.env.HOME + "/.raft/worker",
 		}
 	}));
 }
-
+console.log(exports.config)
 /**
  * globale ip
  */
