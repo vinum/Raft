@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.0.1",
+	"version": "0.0.1-2",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -12,7 +12,9 @@
 		"fstream-npm": "*",
 		"tar": "*",
 		"npm": "*",
-		"rimraf": "*"
+		"restify": "*",
+		"rimraf": "*",
+		"multiparter": "*"
 	},
 	"repository": {
 		"type": "git",

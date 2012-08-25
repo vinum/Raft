@@ -6,12 +6,20 @@
  *
  */
 var events = require('events');
-var fs = require('fs')
-var os = require('os')
+var fs = require('fs');
+var os = require('os');
 
-var tmpDir = os.tmpDir()
+var tmpDir = os.tmpDir();
 
 exports = module.exports = new events.EventEmitter;
+/**
+ * raft package
+ */
+exports.package = require('./package.json');
+/**
+ *raft version
+ */
+exports.version = exports.package.version;
 /**
  * tmp dir
  */
@@ -25,6 +33,10 @@ exports.utils = require('./lib/utils');
  *raft logger
  */
 var Logger = exports.Logger = require('./lib/logger');
+/**
+ *raft logger
+ */
+var Api = exports.Api = require('./lib/api');
 /**
  * pipes
  */
@@ -50,13 +62,12 @@ rpc.Forker = require('./lib/fork/forker');
 /**
  * log
  */
-exports.log = new Logger()
-console.log('link')
+exports.log = new Logger();
 /**
  *
  *raft config
  */
-exports.configPath = process.env.HOME + "/.raft/.config"
+exports.configPath = process.env.HOME + "/.raft/.config";
 
 try {
 	exports.config = JSON.parse(fs.readFileSync(exports.configPath, 'utf-8'));
@@ -77,7 +88,14 @@ try {
 		}
 	}));
 }
-console.log(exports.config)
+/**
+ *
+ */
+
+exports.defults = {
+	host : 'api.mangoraft.com',
+	port : 80
+}
 /**
  * globale ip
  */
@@ -96,5 +114,5 @@ exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb).once
 	} else {
 		exports.emit('ready')
 	}
-}).start();
+})
 
