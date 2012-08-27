@@ -101,18 +101,16 @@ exports.defults = {
  */
 
 exports.ip = exports.utils.getIp().address;
-
+if (Number(exports.ip.split('.').shift()) === 10) {
+	exports.utils.getExternalIp(function(err, ip) {
+		exports.ip = ip
+		exports.emit('ip')
+	});
+} else {
+	exports.emit('ip')
+}
 /**
  * raft store
  */
-exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb).once('open', function() {
-	if (Number(exports.ip.split('.').shift()) === 10) {
-		exports.utils.getExternalIp(function(err, ip) {
-			exports.ip = ip
-			exports.emit('ready')
-		});
-	} else {
-		exports.emit('ready')
-	}
-})
+exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb)
 
