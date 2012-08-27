@@ -1,6 +1,14 @@
 Node.js app container server. PaaS.
 =============
+    __________    _____  ______________________
+    \______   \  /  _  \ \_   _____/\__    ___/
+     |       _/ /  /_\  \ |    __)    |    |   
+     |    |   \/    |    \|     \     |    |   
+     |____|_  /\____|__  /\___  /     |____|   
+            \/         \/     \/  
 
+
+             
 Raft is an application container for node.js apps. The Raft systems is built to be multi node/process.
 
 
