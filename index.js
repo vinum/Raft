@@ -30,6 +30,10 @@ exports.tmpDir = tmpDir;
  */
 exports.utils = require('./lib/utils');
 /**
+ * raft utils
+ */
+exports.Commander = require('./lib/commander');
+/**
  *raft logger
  */
 var Logger = exports.Logger = require('./lib/logger');
@@ -102,11 +106,15 @@ exports.defults = {
 
 exports.ip = exports.utils.getIp().address;
 if (Number(exports.ip.split('.').shift()) === 10) {
+
+	exports.hasIp = false
 	exports.utils.getExternalIp(function(err, ip) {
 		exports.ip = ip
+		exports.hasIp = true
 		exports.emit('ip')
 	});
 } else {
+	exports.hasIp = true
 	exports.emit('ip')
 }
 /**

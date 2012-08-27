@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.0.1-4",
+	"version": "0.0.1-8",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,8 @@
 		"npm": "*",
 		"restify": "*",
 		"rimraf": "*",
-		"multiparter": "*"
+		"multiparter": "*",
+		"keypress": "0.1.x"
 	},
 	"repository": {
 		"type": "git",
