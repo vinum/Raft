@@ -30,7 +30,12 @@ exports.tmpDir = tmpDir;
  */
 exports.utils = require('./lib/utils');
 /**
- * raft utils
+ * raft container
+ */
+exports.Container = require('./lib/container/container');
+
+/**
+ * raft commander
  */
 exports.Commander = require('./lib/commander');
 /**
@@ -38,7 +43,7 @@ exports.Commander = require('./lib/commander');
  */
 var Logger = exports.Logger = require('./lib/logger');
 /**
- *raft logger
+ *raft Api
  */
 var Api = exports.Api = require('./lib/api');
 /**
