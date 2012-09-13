@@ -9,7 +9,10 @@ var events = require('events');
 var fs = require('fs');
 var os = require('os');
 
-var tmpDir = os.tmpDir();
+/**
+ * tmp dir
+ */
+var tmpDir = exports.tmpDir = os.tmpDir();
 
 exports = module.exports = new events.EventEmitter;
 /**
@@ -20,10 +23,6 @@ exports.package = require('./package.json');
  *raft version
  */
 exports.version = exports.package.version;
-/**
- * tmp dir
- */
-exports.tmpDir = tmpDir;
 
 /**
  * raft utils
@@ -32,8 +31,7 @@ exports.utils = require('./lib/utils');
 /**
  * raft container
  */
-exports.Container = require('./lib/container/container');
-
+exports.Container = require('./lib/container/app');
 /**
  * raft commander
  */
@@ -110,6 +108,7 @@ exports.defults = {
  */
 
 exports.ip = exports.utils.getIp().address;
+
 if (Number(exports.ip.split('.').shift()) === 10) {
 
 	exports.hasIp = false
