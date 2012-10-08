@@ -53,6 +53,7 @@ pipes.crypto = require('./lib/pipes/crypto');
 pipes.json = require('./lib/pipes/json');
 pipes.event = require('./lib/pipes/event');
 pipes.split = require('./lib/pipes/split');
+pipes.stream = require('./lib/pipes/stream');
 
 /**
  * pipes
@@ -85,7 +86,10 @@ try {
 			"port" : "27017",
 			"path" : "/data/db"
 		},
-		"workerKey" : exports.utils.uuid(true),
+		"keys" : {
+			"master" : exports.utils.uuid(true),
+			"worker" : exports.utils.uuid(true)
+		},
 		"masterHost" : "mangoraft.com",
 		"paths" : {
 			"tmp" : tmpDir,
