@@ -64,9 +64,20 @@ rpc.module = require('./lib/rpc/module');
 /**
  * Froker
  */
-var rpc = exports.fork = {};
+var jobTracker = require('./lib/job-tracker');
 
-rpc.Forker = require('./lib/fork/forker');
+if (jobTracker.isMaster) {
+	exports.Master = jobTracker
+} else {
+	exports.Worker = jobTracker
+}
+
+/**
+ * Froker
+ */
+var fork = exports.fork = {};
+
+fork.Forker = require('./lib/fork/forker');
 /**
  * log
  */
@@ -129,4 +140,3 @@ if (Number(exports.ip.split('.').shift()) === 10) {
  * raft store
  */
 exports.mongo = new ( require('./lib/mongo/mongo'))(exports.config.mongodb)
-
