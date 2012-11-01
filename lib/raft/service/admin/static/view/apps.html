@@ -1,0 +1,179 @@
+<div id="drones" >
+	<div class="row">
+		<div class="well span4 sidebar">
+			<h4>Welcome</h4>
+			<div class="cleaner_h10"></div>
+
+			<div class="btn primary large">
+				Start new drone
+			</div>
+			<div class="cleaner_h20"></div>
+
+			<p>
+				<a href="#">Main</a>
+			</p>
+			<p>
+				<a href="#">Help</a>
+			</p>
+		</div><!-- end of sidebar -->
+
+		<div class="span14">
+			<h2>Apps</h2>
+			<table class="zebra-striped ads">
+				<thead>
+					<tr>
+						<th class="span2">Name</th>
+						<th class="span2">Version</th>
+						<th class="span2">Domain</th>
+						<th class="span2">Zone</th>
+						<th class="span2">Drones</th>
+						<th class="span2">Status</th>
+						<th class="span3">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					{{ apps.forEach(function(app){ }}
+					<tr id="{{- app.package.name+app.package.user }}" >
+						<td>{{- app.package.name }}</td>
+						<td>{{- app.package.version }}</td>
+						<td>{{- app.package.domain }}</td>
+						<td>{{- app.package.zone }}</td>
+						<td><a class="drone-count" href="#">{{- app.drones.length }}</a></td>
+						<td><span class="label"></span></td>
+						<td>
+						<div class="btn small success">
+							Start
+						</div>
+						<div class="btn small info {{ if(app.drones.length===0){ }} {{- 'disabled' }} {{ } }}">
+							Restart
+						</div>
+						<div class="btn small danger {{ if(app.drones.length===0){ }} {{- 'disabled' }} {{ } }}">
+							Stop
+						</div></td>
+					</tr>
+					<script type="application/javascript">
+						setTimeout(function() {
+						var app={{- JSON.stringify(app) }}
+
+						var id = '{{- app.package.name+app.package.user }}'
+						var label = $('#' + id + ' .label')
+
+						function disabledBtn() {
+
+							$('#' + id + ' .success').addClass('disabled')
+							$('#' + id + ' .info').addClass('disabled')
+							$('#' + id + ' .danger').addClass('disabled')
+
+						}
+
+						function clickStart() {
+
+							$('#' + id + ' .info').removeClass('disabled')
+							$('#' + id + ' .danger').removeClass('disabled')
+							label.removeClass('label-important')
+							label.removeClass('label-success')
+							label.removeClass('label-warning')
+							label.removeClass('label-inverse')
+
+							label.addClass('label-warning')
+							label.html('Starting')
+
+							site.api.Application.start(app.package, function(err, result) {
+
+								site.api.Application.get(app.package, function(err, result) {
+									app = result
+
+									label.removeClass('label-warning')
+									label.addClass('label-success')
+									label.html('Running')
+
+									$('#' + id + '').on('click', '.info', clickrestart)
+									$('#' + id + '').on('click', '.danger', clickstop)
+									$('#' + id + ' .drone-count').html(result.drones.length)
+								})
+							})
+						}
+
+						function clickrestart() {
+
+							var label = $('#' + id + ' .label')
+							label.removeClass('label-important')
+							label.removeClass('label-success')
+							label.removeClass('label-warning')
+							label.removeClass('label-inverse')
+
+							label.addClass('label-warning')
+							label.html('restarting')
+
+							site.api.Application.restart(app.package.name, function(err, result) {
+
+								site.api.Application.get(app.package, function(err, result) {
+									app = result
+									label.removeClass('label-warning')
+									label.addClass('label-success')
+									label.html('Running')
+									$('#' + id + ' .drone-count').html(result.drones.length)
+								})
+							})
+						}
+
+						function clickstop() {
+
+							var label = $('#' + id + ' .label')
+							label.removeClass('label-important')
+							label.removeClass('label-success')
+							label.removeClass('label-warning')
+							label.removeClass('label-inverse')
+
+							label.addClass('label-warning')
+							label.html('Stopping')
+
+							site.api.Application.stop(app.package.name, function(err, result) {
+								site.api.Application.get(app.package, function(err, result) {
+
+									app = result
+
+									label.removeClass('label-warning')
+									label.addClass('label-important')
+									label.html('Stopped')
+									$('#' + id + ' .drone-count').html(result.drones.length)
+
+									$('#' + id + ' .info').addClass('disabled')
+									$('#' + id + ' .danger').addClass('disabled')
+									$('#' + id + '').off('click', '.info', clickrestart)
+									$('#' + id + '').off('click', '.danger', clickstop)
+								})
+							})
+						}
+
+
+						$('#' + id + '').on('click', '.success', clickStart)
+
+						if (app.drones.length === 0) {
+
+							label.html('Stopped')
+							label.addClass('label-important')
+						} else {
+
+							label.html('Running')
+							$('#' + id + '').on('click', '.info', clickrestart)
+							$('#' + id + '').on('click', '.danger', clickstop)
+							label.addClass('label-success')
+						}
+						$('#' + id + ' .drone-count').click(function() {
+						site.api.Application.get(app.package, function(err, result) {
+
+						app = result
+						site.dronesPage(app.drones)
+						})
+						})
+						}, 1000)
+					</script>
+					{{ }) }}
+				</tbody>
+			</table>
+
+		</div><!-- end of center content -->
+	</div>
+</div>
