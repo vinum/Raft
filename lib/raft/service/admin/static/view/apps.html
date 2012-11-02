@@ -1,23 +1,8 @@
 <div id="drones" >
 	<div class="row">
-		<div class="well span4 sidebar">
-			<h4>Welcome</h4>
-			<div class="cleaner_h10"></div>
+		
 
-			<div class="btn primary large">
-				Start new drone
-			</div>
-			<div class="cleaner_h20"></div>
-
-			<p>
-				<a href="#">Main</a>
-			</p>
-			<p>
-				<a href="#">Help</a>
-			</p>
-		</div><!-- end of sidebar -->
-
-		<div class="span14">
+		<div class="span16">
 			<h2>Apps</h2>
 			<table class="zebra-striped ads">
 				<thead>
@@ -26,6 +11,7 @@
 						<th class="span2">Version</th>
 						<th class="span2">Domain</th>
 						<th class="span2">Zone</th>
+						<th class="span2">Deployed</th>
 						<th class="span2">Drones</th>
 						<th class="span2">Status</th>
 						<th class="span3">Action</th>
@@ -39,6 +25,7 @@
 						<td>{{- app.package.version }}</td>
 						<td>{{- app.package.domain }}</td>
 						<td>{{- app.package.zone }}</td>
+						<td>{{- app.package.package?'YES':'NO' }}</td>
 						<td><a class="drone-count" href="#">{{- app.drones.length }}</a></td>
 						<td><span class="label"></span></td>
 						<td>
@@ -157,10 +144,19 @@
 						} else {
 
 							label.html('Running')
-							$('#' + id + '').on('click', '.info', clickrestart)
-							$('#' + id + '').on('click', '.danger', clickstop)
+							if (!app.package.package) {
+								$('#' + id + '').on('click', '.success', clickstart)
+								$('#' + id + '').on('click', '.info', clickrestart)
+							} else {
+
+						$('#' + id + '').off('click', '.success', clickStart)
+								$('#' + id + ' .success').addClass('disabled')
+								$('#' + id + ' .info').addClass('disabled')
+							}
 							label.addClass('label-success')
+
 						}
+
 						$('#' + id + ' .drone-count').click(function() {
 						site.api.Application.get(app.package, function(err, result) {
 
