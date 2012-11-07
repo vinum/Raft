@@ -48,3 +48,9 @@ Raft is an open source project to create a Node.JS PaaS host. All code is writte
  * Full REST support.
  * Uses MongoDB as the database
  * Uses bouncy fro substack to proxy requests to each drone.
+
+
+# USAGE
+
+Once you have started raft you can now interact with raft through the REST HTTP API. The domain for the api is http://api.mangoraft.com replacing mangoraft.com with you domain.
+
