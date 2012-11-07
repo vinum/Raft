@@ -28,15 +28,26 @@ Basic config setup. Create a file called config.json in the config folder
 		"domain":"mangoraft.com"
 	}
 
+if you want https support.
+
+	cd ./config
+	openssl genrsa -out privatekey.pem 1024 
+	openssl req -new -key privatekey.pem -out certificate.csr
+	openssl x509 -req -in certificate.csr -signkey privatekey.pem -out certificate.csr
+
 
 # HOW TO RUN
 
 OKEY so how to start it.
 
 It will be..
+
 	node bin/raft
+
 but is
+
 	node lib/raft
+
 
 
 # WHAT IS IT?
