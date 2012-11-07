@@ -41,7 +41,7 @@ but is
 
 # WHAT IS IT?
 
-Raft is an open source project to create a Node.JS PaaS host. All code is written in javascript so it can run on almost any platform. Raft has been developed on linux platform’s Debian/Red Hat.
+Raft is an open source project to create a Node.JS PaaS host. All code is written in javascript so it can run on almost any platform. Raft has been developed on a linux platform’s Debian/Red Hat.
 
  * Raft uses haibu from nodejitsu to spawn the hosted node apps. 
  * Management for create updating user accounts. 
