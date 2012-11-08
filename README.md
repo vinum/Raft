@@ -82,41 +82,60 @@ Once you have started raft you can now interact with raft through the REST HTTP 
 # Base URL:
     http://api.mangoraft.com
 
-<hr />
 <table class="bordered-table zebra-striped">
    <tr>
-      <td><b>user</b></td>
+      <td><b>/user</b></td>
+      <td>AUTH</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
    </tr>
    <tr>
       <td>&nbsp;</td>
+      <td>No</td>
       <td>POST</td>
       <td><b>/:username</b> - Create a new user.
       </td>
    </tr>
    <tr>
       <td>&nbsp;</td>
+      <td>Yes</td>
       <td>PUT</td>
       <td><b>/</b> - update user info.
       </td>
    </tr>
    <tr>
       <td>&nbsp;</td>
+      <td>Yes</td>
       <td>GET</td>
       <td><b>/</b> - Get user info
       </td>
    </tr>
    <tr>
       <td>&nbsp;</td>
+      <td>No</td>
       <td>GET</td>
       <td><b>/:code/confirm</b> - The code is sent in an email to confirm it.
       </td>
    </tr>
    <tr>
       <td>&nbsp;</td>
+      <td>Yes</td>
       <td>POST</td>
       <td><b>/test</b> - Test the user account auth.
+      </td>
+   </tr>
+   
+   <tr>
+      <td><b>/drones</b></td>
+      <td>AUTH</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+   </tr>
+   <tr>
+      <td>&nbsp;</td>
+      <td>Yes</td>
+      <td>GET</td>
+      <td><b>/running</b> - Get a list of running drones.
       </td>
    </tr>
 </table>
