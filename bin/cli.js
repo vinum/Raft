@@ -2,7 +2,7 @@
 
 var path = require('path')
 var util = require('util')
-var haibu = require('../lib/haibu');
+var raft = require('../lib/raft');
 
 var program = require('commander');
 
@@ -32,8 +32,7 @@ function loop(data) {
 	};
 }
 
-loop(require('../lib/haibu/commands/config'));
-loop(require('../lib/haibu/commands/servers'));
+loop(require('../lib/raft/commands/services'));
 
 /**
  *
