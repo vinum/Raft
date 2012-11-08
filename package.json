@@ -6,7 +6,7 @@
 	"maintainers": ["bmeck <bradley@nodejitsu.com>", "indexzero <charlie@nodejitsu.com>"],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/MangoRaft/haibu.git"
+		"url": "https://github.com/MangoRaft/Raft.git"
 	},
 	"keywords": ["cloud computing", "automated deployment", "platform-as-a-service"],
 	"dependencies": {
@@ -20,7 +20,7 @@
 		"tar": "0.1.13",
 		"winston": "0.6.2",
 		"bcrypt": "*",
-		"raft-api": "*",
+		"raft-api": "0.1.5",
 		"bouncy": "*",
 		"fstream": "0.1.19",
 		"fstream-npm": "0.1.3"
