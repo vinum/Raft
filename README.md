@@ -55,7 +55,7 @@ OKEY so how to start it.
 
 It will be..
 
-	node bin/raft
+	node bin/cli services
 
 but is
 
