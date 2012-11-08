@@ -78,3 +78,29 @@ Raft is an open source project to create a Node.JS PaaS host. All code is writte
 
 Once you have started raft you can now interact with raft through the REST HTTP API. The domain for the api is http://api.mangoraft.com replacing mangoraft.com with you domain.
 
+
+<hr>
+
+
+
+   The force is strong with our REST API.
+
+## Base URL:
+    http://api.nodester.com
+
+<hr />
+<table class="bordered-table zebra-striped">
+   <tr>
+      <td><b>coupon</b></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+   </tr>
+   <tr>
+      <td>&nbsp;</td>
+      <td><a class="btn disabled success">POST</a></td>
+      <td><b>/coupon</b> - Creates coupon request for early access (pass in email)<br />
+         <code>curl -X POST -d "email=your_address@gmail.com" http://nodester.com/coupon</code>
+      </td>
+   </tr>
+</table>
+
