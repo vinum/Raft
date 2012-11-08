@@ -15,18 +15,31 @@
 Basic config setup. Create a file called config.json in the config folder
 
 	{
-		"proxy":{
-			"port":80
+		"proxy": {
+			"port": 80
 		},
-		"db":{
-			"mongodb":{
-				"host":"localhost",
-				"port":27017,
-				"path":"/data/db"
+		"system": {
+			"username": "system-user",
+			"password": "password",
+			"email": "system-noreply@gmail.com"
+		},
+		"db": {
+			"mongodb": {
+				"host": "localhost",
+				"port": 27017,
+				"path": "/data/db"
 			}
 		},
-		"domain":"mangoraft.com"
+		"mail": {
+			"service": "Gmail",
+			"auth": {
+				"user": "noreply@gmail.com",
+				"pass": "password"
+			}
+		},
+		"domain": "your-domain.com"
 	}
+
 
 if you want https support.
 
