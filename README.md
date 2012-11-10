@@ -85,7 +85,7 @@ Once you have started raft you can now interact with raft through the REST HTTP 
 <table class="bordered-table zebra-striped">
    <tr>
       <td><b>/user</b></td>
-      <td>AUTH</td>
+      <td>AUTH Required</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
    </tr>
@@ -121,13 +121,13 @@ Once you have started raft you can now interact with raft through the REST HTTP 
       <td>&nbsp;</td>
       <td>Yes</td>
       <td>POST</td>
-      <td><b>/test</b> - Test the user account auth.
+      <td><b>/test</b> - Test the user accounts auth.
       </td>
    </tr>
    
    <tr>
       <td><b>/drones</b></td>
-      <td>AUTH</td>
+      <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
    </tr>
