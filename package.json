@@ -17,7 +17,7 @@
 		"tar": "0.1.13",
 		"winston": "0.6.2",
 		"bcrypt": "*",
-		"raft-api": "0.1.5",
+		"raft-api": "0.2.0",
 		"bouncy": "*",
 		"fstream": "0.1.19",
 		"fstream-npm": "0.1.3"
