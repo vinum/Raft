@@ -19,6 +19,7 @@
 		"bcrypt": "*",
 		"raft-api": "0.2.0",
 		"bouncy": "*",
+		"socket.io":"*"
 		"fstream": "0.1.19",
 		"fstream-npm": "0.1.3"
 	},
