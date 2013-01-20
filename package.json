@@ -1,0 +1,25 @@
+{
+	"name": "Raft",
+	"version": "0.0.0",
+	"description": "Welcome!",
+	"main": "raft.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/MangoRaft/Raft.git"
+	},
+	"dependencies": {
+		"mongoose": "3.x",
+		"winston": "*",
+		"nconf": "*",
+		"eventemitter2": "*",
+		"pkginfo": "*",
+		"mkdirp": "*",
+		"raft-api": "*",
+		"restify": "*"
+	},
+	"author": "",
+	"license": "BSD"
+}
