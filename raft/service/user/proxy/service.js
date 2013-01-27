@@ -16,16 +16,17 @@ var raft = require('../../../../raft');
 // Creates the Journey router which represents the `raft` Drone webservice.
 //
 exports.run = function(rpc) {
+	console.log(rpc.functions)
 	rpc.expose('proxy.list.host', function listHosts(host) {
 		this.send({
-			domains : []
+			domains : host ? raft.balancer.balancer.domains[host] : raft.balancer.balancer.domains
 		}, 200);
 	})
 	//
 	// ### Proxy Resource
 	// add host to proxy list
 	//
-	rpc.expose('proxy.drone.destroy', function(app) {
+	rpc.expose('user.drone.destroy', function(app) {
 		var user = this.user;
 		this.send({
 			message : 'App removed'
@@ -35,7 +36,7 @@ exports.run = function(rpc) {
 	// ### Proxy Resource
 	// add host to proxy list
 	//
-	rpc.expose('system.drone.destroy', function(app) {
+	rpc.expose('proxy.drone.destroy', function(app) {
 		var user = this.user;
 		this.send({
 			message : 'App removed'

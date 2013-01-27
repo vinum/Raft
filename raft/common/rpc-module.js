@@ -152,7 +152,7 @@ RpcModule.prototype.requestEvent = function(data, cb) {
  */
 RpcModule.prototype.runExpose = function(data, cb) {
 
-	var exsosed = new Exposed(data, this.id, cb);
+	var exsosed = new Exposed(data, this.id, this.user, cb);
 
 	var handler = this.functions[data.method];
 

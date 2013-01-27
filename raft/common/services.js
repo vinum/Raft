@@ -9,14 +9,12 @@ var fs = require('fs');
 var path = require('path');
 var events = require('events');
 var restify = require('restify');
-var httpStreamHelper = require('./http-stream');
 
 var raft = require('../../raft')
 function Services(id) {
 	events.EventEmitter.call(this);
 	this.rpc = {}
-	this.keys = ['keys']
-
+	this.keys = []
 };
 
 //
@@ -26,7 +24,7 @@ util.inherits(Services, events.EventEmitter);
 
 module.exports = Services
 
-Services.prototype.boot = function(callback) {
+Services.prototype.start = function(callback) {
 	var self = this
 	var dir = path.join(__dirname, '..', 'service')
 	fs.readdir(dir, function(err, privileges) {
@@ -46,9 +44,10 @@ Services.prototype.boot = function(callback) {
 				function load() {
 					var service = services.shift();
 					if (!service) {
-						return callback()
+						return loop()
 					}
-					require(path.join(dir, privilege, service)).start(rpc, loop)
+					console.log('service', service)
+					require(path.join(dir, privilege, service)).start(rpc, load)
 				}
 
 				load()
@@ -59,49 +58,6 @@ Services.prototype.boot = function(callback) {
 	})
 }
 
-Services.prototype.expose = function(a, b) {
-	return this.rpc.expose(a, b)
-}
-
-Services.prototype.socket = function(port) {
-	//coming soon
-}
-/**
- *
- *
- */
-
-Services.prototype.http = function(port) {
-	var rpc = this.rpc
-	var server = this.server = restify.createServer({
-		name : raft.config.get('domain'),
-		version : raft.version
-	});
-	server.server.removeAllListeners('error')
-	server.server.removeAllListeners('clientError')
-
-	server.use(restify.authorizationParser());
-	server.use(restify.dateParser());
-	server.use(restify.queryParser());
-	server.use(restify.bodyParser());
-	server.use(restify.urlEncodedBodyParser());
-
-	httpStreamHelper(this)
-
-	server.listen(port);
-	return server
-}
-
-Services.prototype.services = function(options) {
-	if (options.services) {
-		var services = options.services
-		if (Array.isArray(services)) {
-			for (var i = 0; i < services.length; i++) {
-				require(services[i]).run(this)
-			};
-		} else {
-			require(services).run(this)
-		}
-	}
-
+Services.prototype.getPrivilege = function(privilege) {
+	return this.rpc[privilege]
 }

@@ -1,7 +1,6 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 var bcrypt = require('bcrypt')
-
 var util = require('util');
 var crypto = require('crypto');
 var fs = require('fs')
@@ -190,7 +189,4 @@ UserSchema.statics.getAuthenticated = function(username, password, cb) {
 };
 
 module.exports = mongoose.model('User', UserSchema);
-//module.exports.remove({},function(){})
-module.exports.find(function(err, result) {
-	//console.log(err, result)
-})
+

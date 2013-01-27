@@ -4,13 +4,14 @@ var util = require('util');
  *
  */
 
-var Exposed = module.exports = function(data, id, cb) {
+var Exposed = module.exports = function(data, id, user, cb) {
 	var hasSent = false;
 	var result = {};
 	var error = {};
 	var self = this
 	//
 	this.request = {}
+	this.user = user
 	this.request.id = data.id;
 	this.request.method = data.method;
 	this.request.params = data.params;
@@ -76,7 +77,7 @@ var Exposed = module.exports = function(data, id, cb) {
 		return send();
 	};
 	this.__defineGetter__("error", function() {
-		return result
+		return errorFn
 	});
 	this.__defineGetter__("send", function() {
 		return send;

@@ -6,7 +6,7 @@ var path = require('path');
 var events = require('events');
 var restify = require('restify');
 
-var raft = require('../../raft')
+var raft = require('../../../raft')
 var MESSAGE_BACKLOG = 200
 var SESSION_TIMEOUT = 60 * 1000;
 var sessions = {};
@@ -84,40 +84,76 @@ function Channel() {
 
 function createSession(username, password, service, callback) {
 
-	raft.user.auth(username, password, function(err, user) {
+	raft.mongoose.User.getAuthenticated(username, password, function(err, user, reason) {
 		if (err) {
 			return callback(err)
 		}
-
-		for (var i in sessions) {
-			var session = sessions[i];
-			if (session && session.username === username)
-				return null;
-		}
-		var session = {
-			username : username,
-			user : user,
-			channel : new Channel,
-			id : Math.floor(Math.random() * 99999999999).toString(),
-			timestamp : new Date(),
-
-			poke : function() {
-				session.timestamp = new Date();
-			},
-
-			destroy : function() {
-				delete sessions[session.id];
+		if (user) {
+			for (var i in sessions) {
+				var session = sessions[i];
+				if (session && session.username === username)
+					return callback(new Error('sadasd'));
 			}
-		};
-		session.channel.rpc.functions = service.rpc[user.privilege].functions;
-		sessions[session.id] = session;
-		callback(null, session)
+
+			var session = {
+				username : username,
+				user : user,
+				channel : new Channel,
+				id : Math.floor(Math.random() * 99999999999).toString(),
+				timestamp : new Date(),
+
+				poke : function() {
+					session.timestamp = new Date();
+				},
+
+				destroy : function() {
+					delete sessions[session.id];
+				}
+			};
+			session.channel.rpc.user = user
+			session.channel.rpc.functions = service.rpc[user.zone].functions;
+			sessions[session.id] = session;
+			callback(null, session)
+			return;
+		}
+
+		// otherwise we can determine why we failed
+		var reasons = raft.mongoose.User.failedLogin;
+		switch (reason) {
+			case reasons.NOT_FOUND:
+				callback(new Error('reasons.NOT_FOUND'));
+				break;
+			case reasons.PASSWORD_INCORRECT:
+				callback(new Error('reasons.PASSWORD_INCORRECT'));
+				break;
+			case reasons.MAX_ATTEMPTS:
+				callback(new Error('reasons.MAX_ATTEMPTS'));
+				break;
+		}
+
 	})
 }
 
 module.exports = function(service) {
 
-	service.server.post('/stream/join', function(req, res, next) {
+	var server = restify.createServer({
+		name : raft.config.get('domain'),
+		version : raft.version
+	});
+	server.server.removeAllListeners('error')
+	server.server.removeAllListeners('clientError')
+
+	server.use(restify.authorizationParser());
+	server.use(restify.dateParser());
+	server.use(restify.queryParser());
+	server.use(restify.bodyParser());
+	server.use(restify.urlEncodedBodyParser());
+
+server.get('/test',function(req,res){
+	res.end('<body><head><script src="http://webui.mangoraft.com/js/jquery.js"></script><script src="http://webui.mangoraft.com/js/ejs.js"></script><script data-main="http://webui.mangoraft.com/site/xhr.js" src="http://webui.mangoraft.com/js/require.js"></script><script type="application/javascript">var CONFIG = {"baseUrl":"/site","page":"pages/apps","uri":"http://webui.mangoraft.com"}</script></head></body>')
+})
+
+	server.post('/stream/join', function(req, res, next) {
 		if ( typeof req.body === 'string') {
 			var data = JSON.parse(req.body)
 		} else {
@@ -144,7 +180,7 @@ module.exports = function(service) {
 		});
 
 	});
-	service.server.get('/stream/part', function(req, res, next) {
+	server.get('/stream/part', function(req, res, next) {
 		var id = req.query.id;
 		var session;
 		if (id && sessions[id]) {
@@ -155,7 +191,7 @@ module.exports = function(service) {
 			rss : mem.rss
 		});
 	});
-	service.server.get('/stream/recv', function(req, res, next) {
+	server.get('/stream/recv', function(req, res, next) {
 		if (!req.query.since) {
 			res.send(400, {
 				error : "Must supply since parameter"
@@ -184,7 +220,7 @@ module.exports = function(service) {
 			});
 		});
 	});
-	service.server.post('/stream/send', function(req, res, next) {
+	server.post('/stream/send', function(req, res, next) {
 		if ( typeof req.body === 'string') {
 			var data = JSON.parse(req.body)
 		} else {
@@ -207,4 +243,6 @@ module.exports = function(service) {
 			rss : mem.rss
 		});
 	});
+
+	server.listen(9000);
 }
