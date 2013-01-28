@@ -11,10 +11,11 @@ var events = require('events');
 var restify = require('restify');
 
 var raft = require('../../raft')
-function Services(id) {
+
+
+function Services() {
 	events.EventEmitter.call(this);
 	this.rpc = {}
-	this.keys = []
 };
 
 //

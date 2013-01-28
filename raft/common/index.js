@@ -10,12 +10,18 @@ var os = require('os')
 var path = require('path')
 var exec = require('child_process').exec
 var spawn = require('child_process').spawn
-
+var flatiron = require('flatiron');
+var async = flatiron.common.async;
+var rimraf = flatiron.common.rimraf;
 var raft = require('../../raft');
-var crypto = require('crypto'), fs = require('fs'), http = require('http'), os = require('os'), path = require('path'), spawn = require('child_process').spawn, flatiron = require('flatiron'), async = flatiron.common.async, rimraf = flatiron.common.rimraf, raft = require('../../raft');
 
 var common = module.exports = flatiron.common;
 
+
+//
+common.Services = require('./services')
+//
+common.Module = require('./rpc-module')
 //
 // **REALLY DONT DO THIS HERE! But where?**
 //
@@ -112,11 +118,6 @@ common.ipAddress = function(name) {
 
 	return addresses.length ? addresses[0] : '127.0.0.1';
 };
-
-//
-common.Services = require('./services')
-//
-common.Module = require('./rpc-module')
 //
 
 common.mkdir = function(directories) {

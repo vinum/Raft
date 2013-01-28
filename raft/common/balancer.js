@@ -5,24 +5,21 @@
  *
  */
 
-var fs = require('fs');
+var util = require('util')
+var fs = require('fs')
+var net = require('net')
 var path = require('path');
 var cluster = require('cluster');
 var http = require('http');
 var os = require('os')
-var flatiron = require('flatiron');
+var events = require('events')
+var qs = require('querystring')
+var ejs = require('ejs');
 var raft = require('../../raft');
 
 var async = raft.common.async;
 var server = raft.common.server;
 
-var util = require('util')
-var path = require('path')
-var fs = require('fs')
-var net = require('net')
-var events = require('events')
-var qs = require('querystring')
-var ejs = require('ejs');
 ejs.open = '{{';
 ejs.close = '}}';
 var compiled = function() {

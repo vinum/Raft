@@ -5,11 +5,8 @@
  *
  */
 
-var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
-var zlib = require('zlib');
-var tar = require('tar');
 var raft = require('../../raft')
 var async = raft.common.async;
 
@@ -27,12 +24,6 @@ var Drone = exports.Drone = function(options) {
 	this.spawner = new raft.Spawner(options);
 	this.packagesDir = options.packageDir;
 };
-
-Drone.prototype.getApp = function(name, user) {
-	return this.apps[user] ? this.apps[user][name] : null
-}
-Drone.prototype.start = function(app, callback) {
-}
 //
 // ### function start (app, callback)
 // #### @app {App} Application to start in this instance.
