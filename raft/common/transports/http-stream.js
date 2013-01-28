@@ -140,9 +140,6 @@ module.exports = function(service) {
 		name : raft.config.get('domain'),
 		version : raft.version
 	});
-	server.server.removeAllListeners('error')
-	server.server.removeAllListeners('clientError')
-
 	server.use(restify.authorizationParser());
 	server.use(restify.dateParser());
 	server.use(restify.queryParser());
