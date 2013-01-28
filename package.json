@@ -29,7 +29,8 @@
 		"union": "0.3.3",
 		"knox": "0.0.11",
 		"haibu-repo": "*",
-		"ps-pid": "*"
+		"ps-pid": "*",
+		"ejs": "*"
 	},
 	"author": "",
 	"license": "BSD"
