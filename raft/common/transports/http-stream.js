@@ -241,5 +241,5 @@ module.exports = function(service) {
 		});
 	});
 
-	server.listen(9000, '0.0.0.0');
+	server.listen(9000, raft.common.ipAddress());
 }
