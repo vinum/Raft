@@ -146,9 +146,9 @@ module.exports = function(service) {
 	server.use(restify.bodyParser());
 	server.use(restify.urlEncodedBodyParser());
 
-server.get('/test',function(req,res){
-	res.end('<body><head><script src="http://webui.mangoraft.com/js/jquery.js"></script><script src="http://webui.mangoraft.com/js/ejs.js"></script><script data-main="http://webui.mangoraft.com/site/xhr.js" src="http://webui.mangoraft.com/js/require.js"></script><script type="application/javascript">var CONFIG = {"baseUrl":"/site","page":"pages/apps","uri":"http://webui.mangoraft.com"}</script></head></body>')
-})
+	server.get('/test', function(req, res) {
+		res.end('<body><head><script src="http://webui.mangoraft.com/js/jquery.js"></script><script src="http://webui.mangoraft.com/js/ejs.js"></script><script data-main="http://webui.mangoraft.com/site/xhr.js" src="http://webui.mangoraft.com/js/require.js"></script><script type="application/javascript">var CONFIG = {"baseUrl":"/site","page":"pages/apps","uri":"http://webui.mangoraft.com"}</script></head></body>')
+	})
 
 	server.post('/stream/join', function(req, res, next) {
 		if ( typeof req.body === 'string') {
@@ -241,5 +241,5 @@ server.get('/test',function(req,res){
 		});
 	});
 
-	server.listen(9000);
+	server.listen(9000, '0.0.0.0');
 }
