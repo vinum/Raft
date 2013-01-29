@@ -35,6 +35,7 @@ var Drone = exports.Drone = function(options) {
 //
 Drone.prototype.start = function(oldApp, user, callback) {
 	var self = this;
+	console.log(oldApp)
 	function save(app) {
 		self.spawner.trySpawn(app, function(err, result) {
 			if (err) {
