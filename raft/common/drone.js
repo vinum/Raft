@@ -642,11 +642,11 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 	app.name = oldApp.name
 	app.repository = oldApp.repository
 	app.scripts = oldApp.scripts
-	app.domain = oldApp.domain
+	app.domain = oldApp.domain ? oldApp.domain : app.name + '.' + user + '.' + raft.config.get('domain')
 	if (oldApp.subdomain) {
 		//app.domain = app.subdomain + '.' + raft.config.get('domain')
 	} else {
-		//app.domain = oldApp.domain// = app.name + '.' + user + '.' + raft.config.get('domain')
+		//app.domain = oldApp.domain = app.name + '.' + user + '.' + raft.config.get('domain')
 	}
 	callback(null, app)
 };

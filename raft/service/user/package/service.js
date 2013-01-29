@@ -49,10 +49,10 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('package.stop', function(name) {
+	rpc.expose('package.stop', function(app) {
 		var user = this.user
 		var exposed = this;
-		raft.drone.stop(name, user.username, function(err, result) {
+		raft.drone.stop(app.name, user.username, function(err, result) {
 			if (err || !result) {
 				err = err || new Error('Unknown error from drone.');
 				return exposed.error(err);
@@ -63,10 +63,10 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('package.restart', function(name) {
+	rpc.expose('package.restart', function(app) {
 		var user = this.user
 		var exposed = this;
-		raft.drone.restart(name, user.username, function(err, drones) {
+		raft.drone.restart(app.name, user.username, function(err, drones) {
 			if (err) {
 				return exposed.error(err);
 			}
