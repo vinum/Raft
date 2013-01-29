@@ -477,6 +477,8 @@ Drone.prototype.format = function(app, drone) {
 		ctime : drone.ctime,
 		host : host1 || host2,
 		host2 : host2,
+		domain : app.domain,
+		uid : drone.uid,
 		hash : drone.hash,
 		port : drone.port,
 		raftPort : drone.port
