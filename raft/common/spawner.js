@@ -163,9 +163,9 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 	var uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
-	var logFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
-	var outFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
-	var errFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
+	var logFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
+	var outFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
+	var errFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
 
 	foreverOptions = {
 		fork : true,
@@ -249,6 +249,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 		// (remark) this may not work if haibu starts two apps at the same time
 		//
 		function onError(err) {
+			console.log(err)
 			if (!responded) {
 				errState = true;
 				responded = true;
