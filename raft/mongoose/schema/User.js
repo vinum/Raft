@@ -25,6 +25,11 @@ var UserSchema = new Schema({
 		required : true,
 		'default' : 'free'
 	},
+	bucketKey : {
+		type : String,
+		required : true,
+		'default' : raft.common.uuid
+	},
 	limit : {
 		type : Number,
 		required : true,
@@ -188,5 +193,29 @@ UserSchema.statics.getAuthenticated = function(username, password, cb) {
 	});
 };
 
+UserSchema.statics.testBucketKey = function(bucketKey, cb) {
+	this.findOne({
+		bucketKey : bucketKey
+	}, function(err, user) {
+		if (err) {
+			return cb(err);
+		}
+		if (!user) {
+			return cb(null, null, reasons.NOT_FOUND);
+		}
+		return cb(null, user);
+	})
+}
 module.exports = mongoose.model('User', UserSchema);
-
+return;
+module.exports.remove({}, function() {
+	new module.exports({
+		username : 'bob',
+		zone : 'user',
+		password : 'password'
+	}).save(function() {
+		module.exports.find({}, function(err, users) {
+			console.log(users)
+		})
+	})
+})

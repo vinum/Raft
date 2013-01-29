@@ -11,7 +11,7 @@ var raft = require('../../raft')
 var async = raft.common.async;
 
 var LOG_LINEBREAK = "\n";
-var HISTORY_LENGTH = 1000;
+var HISTORY_LENGTH = 5000;
 //
 // ### function Drone (options)
 // #### @options {Object} Options for this instance.
@@ -301,47 +301,56 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 //
 Drone.prototype.getlogs = function(uid, name, user, callback) {
 	var length = HISTORY_LENGTH;
-	var outFileDataLines = [];
-	var errFileDataLines = [];
 	var outFile = this.logsDir + '/' + user + '.' + name + '.outFile.' + uid + '.log'
 	var errFile = this.logsDir + '/' + user + '.' + name + '.errFile.' + uid + '.log'
 
-	fs.stat(outFile, function(err, stat) {
+	function readLog(file, cb) {
+		var lines = []
+		var data = ''
+		fs.stat(file, function(err, stat) {
+			if (err) {
+				return cb(err)
+			}
 
-		var stream = fs.createReadStream(outFile, {
-			flags : 'r',
-			encoding : 'utf8',
-			fd : null,
-			mode : 0666,
-			bufferSize : 64 * 1024,
-			start : Math.max(0, stat.size - length),
-			end : length
+			if (stat.size == 0) {
+				return cb(null, [])
+			}
+			var options = {
+				flags : 'r',
+				encoding : 'utf8',
+				fd : null,
+				mode : 0666,
+				end : stat.size,
+				start : stat.size - length
+			}
+
+			var stream = fs.createReadStream(file, options)
+
+			stream.on('data', function(c) {
+				data += c
+			})
+			stream.on('end', function() {
+				var lines = data.split(LOG_LINEBREAK)
+				lines.shift()
+				lines.shift()
+				cb(null, lines)
+			})
 		})
+	}
 
-		stream.on('data', function(data) {
-			outFileDataLines = outFileDataLines.concat(data.split(LOG_LINEBREAK).reverse())
-		})
-		stream.on('end', function() {
-			fs.stat(outFile, function(err, stat) {
+	readLog(outFile, function(err, stdout) {
+		if (err) {
+			return callback(err)
+		}
 
-				var stream2 = fs.createReadStream(errFile, {
-					flags : 'r',
-					encoding : 'utf8',
-					fd : null,
-					mode : 0666,
-					bufferSize : 64 * 1024,
-					start : Math.max(0, stat.size - length),
-					end : length
-				})
-				stream2.on('data', function(data) {
-					errFileDataLines = errFileDataLines.concat(data.split(LOG_LINEBREAK).reverse())
-				})
-				stream2.on('end', function() {
-					callback(null, {
-						stdout : outFileDataLines,
-						stderr : errFileDataLines
-					})
-				})
+		readLog(errFile, function(err, stderr) {
+			if (err) {
+				return callback(err)
+			}
+
+			callback(null, {
+				stdout : stdout,
+				stderr : stderr
 			})
 		})
 	})
@@ -634,7 +643,7 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 	if (oldApp.subdomain) {
 		app.domain = app.subdomain + '.' + raft.config.get('domain')
 	} else {
-		app.domain = app.name + '.' + user + '.' + raft.config.get('domain')
+		app.domain = oldApp.domain// = app.name + '.' + user + '.' + raft.config.get('domain')
 	}
 	callback(null, app)
 };

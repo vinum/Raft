@@ -1,7 +1,7 @@
 var nssocket = require('nssocket');
 var raft = require('../../../raft')
 
-function authSocket(data, socket, service, callback) {
+function authSocket(data, socket, callback) {
 	raft.mongoose.User.getAuthenticated(data.username, data.password, function(err, user, reason) {
 		if (err) {
 
@@ -18,7 +18,8 @@ function authSocket(data, socket, service, callback) {
 				console.log('error', err)
 			})
 			rpc.user = user
-			rpc.functions = service.rpc[user.zone].functions;
+			console.log(raft.service)
+			rpc.functions = raft.service.rpc[user.zone].functions;
 			callback(null, rpc)
 			return;
 		}
@@ -46,7 +47,7 @@ module.exports = function(service) {
 	var server = nssocket.createServer(function(socket) {
 
 		socket.data('login', function(data) {
-			authSocket(data, socket, service, function(err) {
+			authSocket(data, socket, function(err) {
 				if (err) {
 					socket.send('error', err)
 				} else {

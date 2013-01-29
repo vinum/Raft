@@ -42,7 +42,9 @@ raft.directories = raft.common.mkdir({
 	snapshot : path.join(__dirname, 'snapshot'),
 	tar : path.join(__dirname, 'tar'),
 	package : path.join(__dirname, 'package'),
-	logs : path.join(__dirname, 'logs')
+	logs : path.join(__dirname, 'logs'),
+	bucket : path.join(__dirname, 'bucket')
+
 })
 //
 //config
@@ -50,6 +52,7 @@ raft.directories = raft.common.mkdir({
 raft.config = nconf.file({
 	file : path.join(raft.directories.config, 'config.json')
 });
+raft.bucket = require('./raft/common/bucket-server');
 //
 //mongoose
 //
@@ -89,15 +92,23 @@ raft.on('*', function(data) {
 //raft services
 //
 raft.service = new raft.common.Services();
-if (raft.balancer.cluster) {
+//
+//raft services
+//
 
+
+if (raft.balancer.cluster) {
 	raft.debug('boot', 'Raft about to boot.')
 	raft.service.start(function() {
+console.log(raft.service)
 		raft.debug('boot', 'Raft service has boot.')
 		raft.mongoose.start(function() {
 			raft.debug('boot', 'Raft mongoose has boot.')
 			raft.balancer.start(function() {
 				raft.debug('boot', 'Raft balancer has boot.')
+				raft.bucket.start(function() {
+					raft.debug('boot', 'Raft bucket has boot.')
+				})
 			})
 		})
 	})
