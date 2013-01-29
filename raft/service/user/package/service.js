@@ -24,11 +24,11 @@ exports.run = function(rpc) {
 		})
 	})
 
-	rpc.expose('package.get', function(id) {
+	rpc.expose('package.get', function(app) {
 		var user = this.user
 		var exposed = this;
 
-		var data = raft.drone.show(id, user.username);
+		var data = raft.drone.show(app.name, user.username);
 		if ( typeof data === 'undefined') {
 			exposed.error('No drone(s) found for application ' + id);
 		} else {
