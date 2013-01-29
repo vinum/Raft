@@ -18,7 +18,7 @@
 		"pkginfo": "*",
 		"mkdirp": "*",
 		"raft-api": "*",
-		"restify": "*",
+		"restify": "2.0.0",
 		"flatiron": "0.2.8",
 		"forever-monitor": "1.1.0",
 		"haibu-carapace": "0.7.1",
@@ -32,7 +32,8 @@
 		"ps-pid": "*",
 		"ejs": "*",
 		"bcrypt": "0.7.3",
-		"bouncy": "1.x"
+		"bouncy": "1.x",
+		"nssocket": "0.3.8 "
 	},
 	"author": "",
 	"license": "BSD"

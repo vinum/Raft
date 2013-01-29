@@ -34,6 +34,7 @@ var Exposed = module.exports = function(data, id, user, cb) {
 
 		var request = {
 			//
+			id : self.request.id
 		}
 		if (code) {
 			request.code = code

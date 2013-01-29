@@ -240,6 +240,5 @@ module.exports = function(service) {
 			rss : mem.rss
 		});
 	});
-console.log(9000, raft.common.ipAddress())
-	server.listen(9000, raft.common.ipAddress());
+	server.listen(raft.config.get('transports:http:port'), raft.common.ipAddress());
 }

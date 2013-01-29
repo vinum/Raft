@@ -10,6 +10,8 @@ var path = require('path');
 var raft = require('../../raft')
 var async = raft.common.async;
 
+var LOG_LINEBREAK = "\n";
+var HISTORY_LENGTH = 1000;
 //
 // ### function Drone (options)
 // #### @options {Object} Options for this instance.
@@ -23,6 +25,7 @@ var Drone = exports.Drone = function(options) {
 	this.host = options.host || 'localhost';
 	this.spawner = new raft.Spawner(options);
 	this.packagesDir = options.packageDir;
+	this.logsDir = options.logsDir
 };
 //
 // ### function start (app, callback)
@@ -30,53 +33,9 @@ var Drone = exports.Drone = function(options) {
 // #### @callback {function} Continuation passed to respond to.
 // Attempts to spawn the @app by passing it to the spawner.
 //
-Drone.prototype.validate = function(keys, app) {
-	var i, i2, required, props, check;
-
-	// Check for the basic required properties needed for haibu repositories + requested ones
-	keys = keys || [];
-	required = ['name', 'user', 'version', 'repository.type', 'scripts.start'].concat(keys);
-
-	for ( i = 0; i < required.length; i++) {
-		// split property if needed and run over each part
-		props = required[i].split('.');
-		check = app || this.app;
-
-		for ( i2 = 0; i2 < props.length; i2++) {
-			if ( typeof (check[props[i2]]) == 'undefined') {
-				var message = ['Property', required[i], 'is required.'].join(' ');
-				var err = new Error(message);
-				err.blame = {
-					type : 'user',
-					message : 'Missing properties in repository configuration'
-				}
-				return err;
-			}
-
-			check = check[props[i2]];
-		}
-	}
-	// all ok!
-	return;
-}
-Drone.prototype.start = function(app, user, callback) {
+Drone.prototype.start = function(oldApp, user, callback) {
 	var self = this;
-
-	app.user = user
-
-	var validateError = this.validate([], app)
-
-	if (validateError) {
-		return callback(validateError)
-	}
-
-	if (app.subdomain) {
-		app.domain = app.subdomain + raft.config.get('domain')
-	} else {
-		//app.domain = app.name + '.' + user + '.' + raft.config.get('domain')
-	}
-
-	function save() {
+	function save(app) {
 		self.spawner.trySpawn(app, function(err, result) {
 			if (err) {
 				return callback(err, false);
@@ -89,37 +48,46 @@ Drone.prototype.start = function(app, user, callback) {
 				return callback(err);
 			}
 			result.hash = app.hash
-			self._add(app, result, function(err) {
+			self._add(app, result, function(err, data) {
 				//
 				// If there is an error persisting the drone
 				// to disk then just respond anyway since the
 				// drone process started correctly.
 				//
-				var data = self._formatRecord(result)
-				new raft.mongoose.Drone(data).save(function() {
-					callback(null, data);
-					raft.balancer.addApp(app)
-					raft.balancer.addDrone(data, app)
-
-				})
+				callback(null, data);
 			});
 		});
 	}
 
 
-	raft.mongoose.Package.findOne({
-		name : app.name,
-		user : app.user,
-		version : app.version
-	}, function(err, package) {
-		if (!package) {
-			app.versionCode = 0
-			new raft.mongoose.Package(app).save(save)
-		} else {
-
-			app.versionCode = package.versionCode = package.versionCode + 1
-			package.save(save)
+	this._cleanPackage(oldApp, user, function(err, app) {
+		if (err) {
+			return callback(err)
 		}
+		raft.mongoose.Package.findOne({
+			name : app.name,
+			user : app.user,
+			version : app.version
+		}, function(err, package) {
+			if (!package) {
+				app.versionCode = 0
+				new raft.mongoose.Package(app).save(function(err) {
+					if (err) {
+						return callback(err)
+					}
+					save(app)
+				})
+			} else {
+
+				app.versionCode = package.versionCode = package.versionCode + 1
+				package.save(function(err) {
+					if (err) {
+						return callback(err)
+					}
+					save(app)
+				})
+			}
+		})
 	})
 };
 
@@ -153,8 +121,7 @@ Drone.prototype.stop = function(name, user, cleanup, callback) {
 				raft.mongoose.Drone.remove({
 					pid : pid,
 					uid : uid
-				}, function() {
-				})
+				}, next)
 			});
 		}
 
@@ -177,11 +144,13 @@ Drone.prototype.stop = function(name, user, cleanup, callback) {
 
 		app.drones[key].monitor.once('stop', onStop);
 		app.drones[key].monitor.once('error', onErr);
+
 		try {
 			app.drones[key].monitor.stop(true);
 		} catch (err) {
 			onErr(err);
 		}
+
 		raft.emit(['drone', 'stop', 'success'], {
 			key : key
 		});
@@ -215,7 +184,7 @@ Drone.prototype.destroy = function(cleanup, callback) {
 // responds with the list of processes of new processes.
 //
 Drone.prototype.restart = function(name, user, callback) {
-	if (!this.apps || !this.apps[name] || !this.apps[user][name]) {
+	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
 		return callback(new Error('Cannot restart application that is not running.'));
 	}
 
@@ -266,6 +235,116 @@ Drone.prototype.clean = function(app, user, callback) {
 		}
 		self.spawner.rmApp(appsDir, app, callback);
 	});
+};
+
+//
+// ### function setEnv (key, val, name, user, callback)
+// #### @app {App} Application to clean in this instance.
+// #### @callback {function} Continuation passed to respond to.
+// Stops the potentially running application then removes all dependencies
+// and source files associated with the application.
+//
+Drone.prototype.setEnv = function(key, val, name, user, callback) {
+	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
+		return callback(new Error('Cannot restart application that is not running.'));
+	}
+
+	var self = this
+	var record = this.apps[user][name]
+	var keys = Object.keys(record.drones)
+	var processes = [];
+	function setEnv(uid, next) {
+		record.drones[uid].rpc.invoke('env.set', [key, val], next)
+	}
+
+
+	async.forEach(keys, setEnv, function() {
+		callback(null);
+	});
+};
+//
+// ### function getEnv (key, name, user, callback)
+// #### @app {App} Application to clean in this instance.
+// #### @callback {function} Continuation passed to respond to.
+// Stops the potentially running application then removes all dependencies
+// and source files associated with the application.
+//
+Drone.prototype.getEnv = function(key, name, user, callback) {
+	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
+		return callback(new Error('Cannot restart application that is not running.'));
+	}
+
+	var self = this
+	var record = this.apps[user][name]
+	var keys = Object.keys(record.drones)
+	var processes = {};
+
+	function setEnv(uid, next) {
+		record.drones[uid].rpc.invoke('env.get', [key], function(err, result) {
+			processes[uid] = result.env
+			next()
+		})
+	}
+
+
+	async.forEach(keys, setEnv, function() {
+		callback(null, processes);
+	});
+
+};
+//
+// ### function getEnv (key, name, user, callback)
+// #### @app {App} Application to clean in this instance.
+// #### @callback {function} Continuation passed to respond to.
+// Stops the potentially running application then removes all dependencies
+// and source files associated with the application.
+//
+Drone.prototype.getlogs = function(uid, name, user, callback) {
+	var length = HISTORY_LENGTH;
+	var outFileDataLines = [];
+	var errFileDataLines = [];
+	var outFile = this.logsDir + '/' + user + '.' + name + '.outFile.' + uid + '.log'
+	var errFile = this.logsDir + '/' + user + '.' + name + '.errFile.' + uid + '.log'
+
+	fs.stat(outFile, function(err, stat) {
+
+		var stream = fs.createReadStream(outFile, {
+			flags : 'r',
+			encoding : 'utf8',
+			fd : null,
+			mode : 0666,
+			bufferSize : 64 * 1024,
+			start : Math.max(0, stat.size - length),
+			end : length
+		})
+
+		stream.on('data', function(data) {
+			outFileDataLines = outFileDataLines.concat(data.split(LOG_LINEBREAK).reverse())
+		})
+		stream.on('end', function() {
+			fs.stat(outFile, function(err, stat) {
+
+				var stream2 = fs.createReadStream(errFile, {
+					flags : 'r',
+					encoding : 'utf8',
+					fd : null,
+					mode : 0666,
+					bufferSize : 64 * 1024,
+					start : Math.max(0, stat.size - length),
+					end : length
+				})
+				stream2.on('data', function(data) {
+					errFileDataLines = errFileDataLines.concat(data.split(LOG_LINEBREAK).reverse())
+				})
+				stream2.on('end', function() {
+					callback(null, {
+						stdout : outFileDataLines,
+						stderr : errFileDataLines
+					})
+				})
+			})
+		})
+	})
 };
 
 //
@@ -449,7 +528,14 @@ Drone.prototype._add = function(app, drone, callback) {
 		self._update(record, uid, data);
 		uid = data.uid;
 	});
-	callback()
+
+	var data = self._formatRecord(drone)
+
+	new raft.mongoose.Drone(data).save(function(err) {
+		raft.balancer.addApp(app)
+		raft.balancer.addDrone(data, app)
+		callback(null, data);
+	})
 };
 
 //
@@ -507,9 +593,10 @@ Drone.prototype._update = function(record, existing, updated, callback) {
 // Formats the specified `record` based on the `record.socket`.
 //
 Drone.prototype._formatRecord = function(record, app) {
-	var response = raft.common.clone(record.data);
-	response.repository = null;
 
+	var response = raft.common.clone(record.data);
+	//response.repository = null;
+	delete response.spawnWith
 	if (record.socket && record.socket.port) {
 		response.port = record.socket.port;
 		response.host = record.socket.host;
@@ -526,3 +613,58 @@ Drone.prototype._formatRecord = function(record, app) {
 
 	return response;
 };
+
+//
+// ### function _formatRecord (record)
+// #### @record {Object} Record to format.
+// Formats the specified `record` based on the `record.socket`.
+//
+Drone.prototype._cleanPackage = function(oldApp, user, callback) {
+	var app = {}
+
+	var validateError = this._validate([], oldApp)
+
+	if (validateError) {
+		return callback(validateError)
+	}
+	app.user = user
+	app.name = oldApp.name
+	app.repository = oldApp.repository
+	app.scripts = oldApp.scripts
+	if (oldApp.subdomain) {
+		app.domain = app.subdomain + '.' + raft.config.get('domain')
+	} else {
+		app.domain = app.name + '.' + user + '.' + raft.config.get('domain')
+	}
+	callback(null, app)
+};
+
+Drone.prototype._validate = function(keys, app) {
+	var i, i2, required, props, check;
+
+	// Check for the basic required properties needed for haibu repositories + requested ones
+	keys = keys || [];
+	required = ['name', 'version', 'repository.type', 'scripts.start'].concat(keys);
+
+	for ( i = 0; i < required.length; i++) {
+		// split property if needed and run over each part
+		props = required[i].split('.');
+		check = app || this.app;
+
+		for ( i2 = 0; i2 < props.length; i2++) {
+			if ( typeof (check[props[i2]]) == 'undefined') {
+				var message = ['Property', required[i], 'is required.'].join(' ');
+				var err = new Error(message);
+				err.blame = {
+					type : 'user',
+					message : 'Missing properties in repository configuration'
+				}
+				return err;
+			}
+
+			check = check[props[i2]];
+		}
+	}
+	// all ok!
+	return;
+}

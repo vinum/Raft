@@ -105,7 +105,6 @@ Balancer.prototype.handle = function(req, bounce) {
 		});
 
 	drone = app.drones.shift()
-	console.log(drone.port)
 	app.drones.push(drone)
 
 	var socket = net.connect({
@@ -306,19 +305,12 @@ exports.addDrone = function(drone, app) {
 	});
 }
 exports.destroyDrone = function(drone, app) {
-	console.log('exports.destroyDrone', {
-		host : drone.host,
-		port : drone.port
-	}, {
-		domain : app.domain
-	})
 	exports.balancer.destroyDrone({
 		host : drone.host,
 		port : drone.port
 	}, {
 		domain : app.domain
 	})
-
 	Object.keys(cluster.workers).forEach(function(id) {
 		cluster.workers[id].send({
 			cmd : 'destroyDrone',
@@ -365,7 +357,7 @@ exports.start = function(callback) {
 	cluster.setupMaster({
 		exec : __dirname + '/fork.js',
 		args : raft.config.get('proxy:port') ? [raft.config.get('proxy:port')] : ['8000'],
-		silent : raft.config.get('proxy:silent') || false
+		silent : raft.config.get('proxy:silent') || true
 	})
 	cluster.on('exit', function(worker, code, signal) {
 		exports.fork(function() {

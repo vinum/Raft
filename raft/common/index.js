@@ -16,8 +16,6 @@ var rimraf = flatiron.common.rimraf;
 var raft = require('../../raft');
 
 var common = module.exports = flatiron.common;
-
-
 //
 common.Services = require('./services')
 //
@@ -74,13 +72,11 @@ common.rmApps = function(appsDir, callback) {
 		callback = appsDir;
 		appsDir = null;
 	}
-
 	appsDir = appsDir || raft.config.get('directories:apps');
 	fs.readdir(appsDir, function(err, users) {
 		if (err) {
 			return callback(err);
 		}
-
 		async.forEach(users, function rmUser(user, next) {
 			rimraf(path.join(appsDir, user), next);
 		}, callback);
@@ -94,7 +90,6 @@ common.rmApps = function(appsDir, callback) {
 //
 common.sanitizeAppname = function(name) {
 	var sha1 = crypto.createHash('sha1');
-
 	sha1.update(name);
 	return name.replace(/[^a-z0-9\-\_]+/g, '-') + '-' + sha1.digest('hex');
 };
@@ -115,7 +110,6 @@ common.ipAddress = function(name) {
 		});
 		return addrs.length ? addrs[0].address : undefined;
 	}).filter(Boolean);
-
 	return addresses.length ? addresses[0] : '127.0.0.1';
 };
 //
@@ -128,8 +122,6 @@ common.mkdir = function(directories) {
 		mkdirp(directories[keys[i]], function(err) {
 			if (err)
 				console.error(err)
-			else
-				console.log('pow!')
 		});
 	};
 	return directories
@@ -146,11 +138,20 @@ common.uuid = function uuid(a) {
 	}
 	return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }
+//
+//
+//
 var SIGINTFn = []
 
+//
+//
+//
 common.onSIGINT = function(fn) {
 	SIGINTFn.push(fn)
 }
+//
+//
+//
 var loop = function() {
 	var fn = SIGINTFn.shift()
 	if (!fn) {
@@ -160,4 +161,7 @@ var loop = function() {
 		fn(loop)
 	});
 };
+//
+//
+//
 process.on('SIGINT', loop);

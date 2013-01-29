@@ -16,7 +16,7 @@ var raft = require('../../../../raft');
 //
 exports.run = function(rpc) {
 
-	rpc.expose('drone.running', function() {
+	rpc.expose('package.running', function() {
 		var user = this.user
 		var exposed = this;
 		this.send({
@@ -24,7 +24,7 @@ exports.run = function(rpc) {
 		})
 	})
 
-	rpc.expose('drone.get', function(id) {
+	rpc.expose('package.get', function(id) {
 		var user = this.user
 		var exposed = this;
 
@@ -36,10 +36,10 @@ exports.run = function(rpc) {
 		}
 	})
 
-	rpc.expose('drone.start', function(package) {
+	rpc.expose('package.start', function(app) {
 		var user = this.user
 		var exposed = this;
-		raft.drone.start(package, user.username, function(err, result) {
+		raft.drone.start(app, user.username, function(err, result) {
 			if (err) {
 				return exposed.error(err);
 			}
@@ -49,7 +49,7 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('drone.stop', function(name) {
+	rpc.expose('package.stop', function(name) {
 		var user = this.user
 		var exposed = this;
 		raft.drone.stop(name, user.username, function(err, result) {
@@ -58,12 +58,12 @@ exports.run = function(rpc) {
 				return exposed.error(err);
 			}
 			exposed.send({
-
+				stopped : true
 			});
 		});
 	})
 
-	rpc.expose('drone.restart', function(name) {
+	rpc.expose('package.restart', function(name) {
 		var user = this.user
 		var exposed = this;
 		raft.drone.restart(name, user.username, function(err, drones) {
@@ -76,7 +76,7 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('drone.clean', function(app) {
+	rpc.expose('package.clean', function(app) {
 		var user = this.user
 		var exposed = this;
 		raft.drone.clean(app, user.username, function(err, drones) {
@@ -89,7 +89,7 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('drone.update', function(app) {
+	rpc.expose('package.update', function(app) {
 		var user = this.user
 		var exposed = this;
 		raft.drone.update(app, user.username, function(err, drones) {
@@ -103,7 +103,7 @@ exports.run = function(rpc) {
 		});
 	})
 
-	rpc.expose('drone.load', function(app, uid) {
+	rpc.expose('package.load', function(app, uid) {
 		var user = this.user
 		var exposed = this;
 		var by = {

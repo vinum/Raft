@@ -30,11 +30,8 @@ function getSpawnOptions(app) {
 
 	var options = {};
 
-	options.carapaceBin = path.join(__dirname, '..', '..', 'node_modules', 'haibu-carapace', 'bin', 'carapace');
+	options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
 
-	var carapaceEnv = {};
-	if (carapaceEnv)
-		mixin(env, carapaceEnv);
 	if (app.env)
 		mixin(env, app.env);
 	options.env = env;
@@ -50,6 +47,7 @@ var Spawner = exports.Spawner = function Spawner(options) {
 	this.silent = options.silent || false;
 	this.host = options.host || '127.0.0.1';
 	this.packageDir = options.packageDir
+	this.logsDir = options.logsDir
 	this.minUptime = typeof options.minUptime !== 'undefined' ? options.minUptime : 2000;
 };
 
@@ -142,7 +140,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 	var self = this
 	var app = repo.app
 	var meta = {
-		app : app.name,
+		name : app.name,
 		user : app.user
 	}
 	var script = repo.startScript;
@@ -150,7 +148,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 	var responded = false;
 	var stderr = [];
 	var stdout = [];
-	var options = ['--plugin', 'net'];
+	var options = ['--plugin', 'net', '--plugin', 'rpc', '--plugin', 'env'];
 	var foreverOptions;
 	var carapaceBin;
 	var timeout;
@@ -165,6 +163,10 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 	var uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
+	var logFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
+	var outFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
+	var errFile = this.logsDir  +'/'+ meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
+
 	foreverOptions = {
 		fork : true,
 		silent : true,
@@ -177,7 +179,9 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 		killTTL : 0,
 		minUptime : this.minUptime,
 		command : spawnOptions.command,
-		options : [spawnOptions.carapaceBin].concat(options)
+		options : [spawnOptions.carapaceBin].concat(options),
+		'outFile' : outFile,
+		'errFile' : errFile
 	};
 
 	foreverOptions.forever = typeof self.maxRestart === 'undefined';
@@ -295,7 +299,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 					return
 				}
 				raft.mongoose.Load.findOne({
-					name : meta.app,
+					name : meta.name,
 					user : meta.user,
 					uid : result.data.uid,
 					pid : result.pid
@@ -326,19 +330,33 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			result.data = data
 			result.pid = monitor.childData.pid
 			result.pkg = app
+			result.logs = {
+				outFile : outFile,
+				errFile : errFile
+			}
 			result.load = {}
 
+			var rpc = result.rpc = new raft.common.Module(function(data) {
+				drone.child.send({
+					cmd : 'rpc',
+					data : data
+				})
+			})
+			drone.child.on('message', function(message) {
+				if (message.data && message.cmd && message.cmd === 'rpc') {
+					result.rpc.requestEvent(message.data);
+				}
+			})
 			loadWatch = setInterval(function() {
 				updateLoad()
 			}, 5000)
 
 			new raft.mongoose.Load({
-				name : meta.app,
+				name : meta.name,
 				user : meta.user,
 				uid : result.data.uid,
 				pid : result.pid
 			}).save(function(err) {
-
 				updateLoad()
 			})
 		}
@@ -409,6 +427,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 		timeout = setTimeout(onTimeout, 20000);
 
 		drone.start();
+
 	});
 };
 

@@ -20,7 +20,7 @@ var raft = module.exports = new EventEmitter2({
 //debugger
 //setup logger
 //
-raft.debug = winston.log.bind(winston.log)
+raft.debug = console.log.bind(console.log)
 //
 // Expose version through `pkginfo`.
 //
@@ -41,7 +41,8 @@ raft.directories = raft.common.mkdir({
 	tmp : path.join(__dirname, 'tmp'),
 	snapshot : path.join(__dirname, 'snapshot'),
 	tar : path.join(__dirname, 'tar'),
-	package : path.join(__dirname, 'package')
+	package : path.join(__dirname, 'package'),
+	logs : path.join(__dirname, 'logs')
 })
 //
 //config
@@ -61,10 +62,11 @@ raft.Spawner = require('./raft/common/spawner').Spawner;
 //Drone
 //
 raft.Drone = require('./raft/common/drone').Drone;
-var drone = raft.drone = new raft.Drone({
-	packageDir : raft.directories.package
-});
 
+var drone = raft.drone = new raft.Drone({
+	packageDir : raft.directories.package,
+	logsDir : raft.directories.logs
+});
 raft.common.onSIGINT(function(next) {
 	drone.cleanAll(next)
 })
@@ -80,24 +82,26 @@ raft.balancer = require('./raft/common/balancer');
 //transports
 //
 raft.Balancer = raft.balancer.Balancer;
-
+raft.on('*', function(data) {
+	console.log(data)
+})
 //
 //raft services
 //
 raft.service = new raft.common.Services();
 if (raft.balancer.cluster) {
 
+	raft.debug('boot', 'Raft about to boot.')
 	raft.service.start(function() {
+		raft.debug('boot', 'Raft service has boot.')
 		raft.mongoose.start(function() {
-			console.log('mongoose')
-
+			raft.debug('boot', 'Raft mongoose has boot.')
 			raft.balancer.start(function() {
-				console.log('balancer')
-
-				console.log('service')
-				raft.transports.http(raft.service)
+				raft.debug('boot', 'Raft balancer has boot.')
 			})
 		})
-		console.log('mongoose')
 	})
+} else {
+
+	raft.debug('boot', 'Process is part of a cluster.')
 }

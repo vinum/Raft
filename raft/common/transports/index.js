@@ -1,3 +1,4 @@
 module.exports = {
-	http : require('./http-stream')
+	http : require('./http-stream'),
+	nssocket : require('./nssocket')
 }

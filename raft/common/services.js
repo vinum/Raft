@@ -12,7 +12,6 @@ var restify = require('restify');
 
 var raft = require('../../raft')
 
-
 function Services() {
 	events.EventEmitter.call(this);
 	this.rpc = {}
@@ -25,12 +24,13 @@ util.inherits(Services, events.EventEmitter);
 
 module.exports = Services
 
-Services.prototype.start = function(callback) {
+Services.prototype._start = function(callback) {
 	var self = this
 	var dir = path.join(__dirname, '..', 'service')
 	fs.readdir(dir, function(err, privileges) {
 		if (err)
 			throw err
+		raft.debug('Services', 'found privileges [' + privileges.join(', ') + ']')
 		function loop() {
 			var privilege = privileges.shift()
 			if (!privilege) {
@@ -42,12 +42,12 @@ Services.prototype.start = function(callback) {
 			fs.readdir(path.join(dir, privilege), function(err, services) {
 				if (err)
 					throw err
+				raft.debug('Services', 'Found services [' + services.join(', ') + '] for privilege [' + privilege + ']')
 				function load() {
 					var service = services.shift();
 					if (!service) {
 						return loop()
 					}
-					console.log('service', service)
 					require(path.join(dir, privilege, service)).start(rpc, load)
 				}
 
@@ -56,6 +56,23 @@ Services.prototype.start = function(callback) {
 		}
 
 		loop()
+	})
+}
+
+Services.prototype.start = function(callback) {
+	var self = this
+	var transports = raft.config.get('transports')
+
+	this._start(function() {
+		Object.keys(transports).forEach(function(type) {
+			var config = transports[type]
+			if (config.load) {
+
+				raft.debug('boot', 'Raft transports ' + type + ' will boot.')
+				raft.transports[type](self)
+			}
+		})
+		callback()
 	})
 }
 

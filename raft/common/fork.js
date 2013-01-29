@@ -29,7 +29,7 @@ process.on('message', function(msg) {
 
 var server = bouncy(balancer.handle.bind(balancer))
 server.on('listen', function() {
-	//console.log('Bouncy listen')
+	
 })
 server.listen(Number(process.argv[2] || 3000))
 function ssl() {
@@ -51,7 +51,7 @@ if (options) {
 
 	var sslServer = bouncy(options, balancer.handle.bind(balancer))
 	sslServer.on('listen', function() {
-		//console.log('Bouncy listen')
+		
 	})
 	sslServer.listen(Number(process.argv[2] || 3000) + 363)
 }

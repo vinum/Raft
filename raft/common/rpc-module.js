@@ -8,11 +8,6 @@ var cp = require('child_process');
 var net = require('net');
 var crypto = require('crypto');
 
-/***
- * Local modules
- */
-
-var raft = require('../../raft')
 /**
  *
  */
