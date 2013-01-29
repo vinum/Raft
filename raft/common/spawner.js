@@ -207,6 +207,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 		foreverOptions.options.push(script);
 		carapaceBin = foreverOptions.options.shift();
+		console.log(foreverOptions)
 		var drone = new forever.Monitor(carapaceBin, foreverOptions);
 		drone.on('error', function() {
 			//
