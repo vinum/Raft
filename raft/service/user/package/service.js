@@ -30,7 +30,7 @@ exports.run = function(rpc) {
 
 		var data = raft.drone.show(app.name, user.username);
 		if ( typeof data === 'undefined') {
-			exposed.error('No drone(s) found for application ' + id);
+			exposed.error('No drone(s) found for application ' + app.name);
 		} else {
 			exposed.send(data);
 		}
@@ -113,7 +113,7 @@ exports.run = function(rpc) {
 		if (uid) {
 			by.uid = uid
 		}
-		var query = raft.mongoose.Load.find(by)
+		var query = raft.mongoose.Stats.find(by)
 
 		query.exec(function(err, data) {
 			if (err) {
