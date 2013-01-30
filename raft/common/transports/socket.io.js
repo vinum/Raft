@@ -45,8 +45,8 @@ module.exports = function(service) {
 	io.set("origins", "*:*|*");
 	io.set('transports', ['jsonp-polling']);
 	io.sockets.on('connection', function(socket) {
-		socket.on('login', function() {
-			authSocket(data, socket, function(err, data) {
+		socket.on('login', function(data) {
+			authSocket(data, socket, function(err) {
 				if (err) {
 					socket.emit('error', err)
 				} else {
