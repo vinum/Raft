@@ -365,12 +365,13 @@ exports.start = function(callback) {
 		})
 	});
 
-	exports.fork(callback)
 	exports.fork(function() {
-
-	})
-	exports.fork(function() {
-
+		exports.fork(function() {
+			exports.fork(function() {
+				exports.sync()
+				callback()
+			})
+		})
 	})
 }
 //
