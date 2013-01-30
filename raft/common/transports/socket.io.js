@@ -42,6 +42,8 @@ module.exports = function(service) {
 	// Create an `nssocket` TCP server
 	//
 	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
+	io.set("origins", "*");
+	io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
 	io.sockets.on('connection', function(socket) {
 		socket.on('login', function() {
 			authSocket(data, socket, function() {
