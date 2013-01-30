@@ -46,7 +46,7 @@ Stats.prototype.timmer = function() {
 		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
 			self.data = loadData
 			self.data.disk = stdout
-			console.log(self.data)
+			console.log([stdout, stderr])
 			new raft.mongoose.Stats({
 				pcpu : loadData.pcpu,
 				rssize : loadData.rssize,
@@ -54,7 +54,7 @@ Stats.prototype.timmer = function() {
 				name : self.meta.name,
 				user : self.meta.user,
 				uid : self.meta.uid,
-				disk : stdout.split('	')[0]
+				disk : stdout
 			}).save(function() {
 				self.emit('update')
 				setTimeout(function() {
