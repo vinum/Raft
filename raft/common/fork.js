@@ -12,6 +12,7 @@ process.on('uncaughtException', function(err) {
 });
 process.on('message', function(msg) {
 	var cmd;
+	console.log(msg)
 	if ( cmd = msg.cmd) {
 		if (cmd === 'addApp') {
 			balancer.addApp(msg.app)
@@ -23,13 +24,13 @@ process.on('message', function(msg) {
 			balancer.destroyDrone(msg.drone, msg.app)
 		} else if (cmd === 'sync') {
 			balancer.domains = msg.domains
-		} 
+		}
 	}
 });
 
 var server = bouncy(balancer.handle.bind(balancer))
 server.on('listen', function() {
-	
+
 })
 server.listen(Number(process.argv[2] || 3000))
 function ssl() {
@@ -51,7 +52,7 @@ if (options) {
 
 	var sslServer = bouncy(options, balancer.handle.bind(balancer))
 	sslServer.on('listen', function() {
-		
+
 	})
 	sslServer.listen(Number(process.argv[2] || 3000) + 363)
 }

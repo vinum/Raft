@@ -1,6 +1,4 @@
-var nssocket = require('nssocket');
 var raft = require('../../../raft')
-
 function authSocket(data, socket, callback) {
 	raft.mongoose.User.getAuthenticated(data.username, data.password, function(err, user, reason) {
 		if (err) {
@@ -8,9 +6,9 @@ function authSocket(data, socket, callback) {
 		}
 		if (user) {
 			var rpc = new raft.common.Module(function(data) {
-				socket.send('rpc', data);
+				socket.emit('rpc', data);
 			})
-			socket.data('rpc', function(data) {
+			socket.on('rpc', function(data) {
 				rpc.requestEvent(data);
 			});
 
@@ -43,26 +41,26 @@ module.exports = function(service) {
 	//
 	// Create an `nssocket` TCP server
 	//
-	var server = nssocket.createServer(function(socket) {
-
-		socket.data('login', function(data) {
-			authSocket(data, socket, function(err) {
+	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
+	io.sockets.on('connection', function(socket) {
+		socket.on('login', function() {
+			authSocket(data, socket, function() {
 				if (err) {
-					socket.send('error', err)
+					socket.emit('error', err)
 				} else {
-					socket.send('auth')
+					socket.emit('auth')
 				}
 			})
 		})
 	});
-	server.listen(raft.config.get('transports:nssocket:port'));
+
 	raft.balancer.addApp({
-		domain : 'nssocket.api.' + raft.config.get('domain')
+		domain : 'ws.api.' + raft.config.get('domain')
 	})
 	raft.balancer.addDrone({
 		host : raft.common.ipAddress(),
-		port : raft.config.get('transports:nssocket:port')
+		port : raft.config.get('transports:socket.io:port')
 	}, {
-		domain : 'nssocket.api.' + raft.config.get('domain')
+		domain : 'ws.api.' + raft.config.get('domain')
 	})
 }

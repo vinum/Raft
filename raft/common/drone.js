@@ -640,6 +640,7 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 		return callback(validateError)
 	}
 	app.user = user
+	app.nameClean = raft.common.sanitizeAppname(oldApp.name)
 	app.name = oldApp.name
 	app.repository = oldApp.repository
 	app.scripts = oldApp.scripts

@@ -68,7 +68,8 @@ raft.Drone = require('./raft/common/drone').Drone;
 
 var drone = raft.drone = new raft.Drone({
 	packageDir : raft.directories.package,
-	logsDir : raft.directories.logs
+	logsDir : raft.directories.logs,
+	snapshotDir : raft.directories.snapshot
 });
 raft.common.onSIGINT(function(next) {
 	drone.cleanAll(next)
@@ -96,16 +97,14 @@ raft.service = new raft.common.Services();
 //raft services
 //
 
-
 if (raft.balancer.cluster) {
 	raft.debug('boot', 'Raft about to boot.')
-	raft.service.start(function() {
-console.log(raft.service)
-		raft.debug('boot', 'Raft service has boot.')
-		raft.mongoose.start(function() {
-			raft.debug('boot', 'Raft mongoose has boot.')
-			raft.balancer.start(function() {
-				raft.debug('boot', 'Raft balancer has boot.')
+	raft.balancer.start(function() {
+		raft.debug('boot', 'Raft balancer has boot.')
+		raft.service.start(function() {
+			raft.debug('boot', 'Raft service has boot.')
+			raft.mongoose.start(function() {
+				raft.debug('boot', 'Raft mongoose has boot.')
 				raft.bucket.start(function() {
 					raft.debug('boot', 'Raft bucket has boot.')
 				})

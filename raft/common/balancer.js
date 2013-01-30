@@ -357,7 +357,7 @@ exports.start = function(callback) {
 	cluster.setupMaster({
 		exec : __dirname + '/fork.js',
 		args : raft.config.get('proxy:port') ? [raft.config.get('proxy:port')] : ['8000'],
-		silent : raft.config.get('proxy:silent') || true
+		silent : raft.config.get('proxy:silent') || false
 	})
 	cluster.on('exit', function(worker, code, signal) {
 		exports.fork(function() {

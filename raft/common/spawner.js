@@ -13,10 +13,18 @@ var events = require('events')
 var mixin = require('flatiron').common.mixin
 var async = require('flatiron').common.async
 var rimraf = require('flatiron').common.rimraf
-var repositories = require('haibu-repo')
+var repositories = require('../../../haibu-repo')
 var Repository = repositories.Repository
 var getPid = require('ps-pid');
+var tar = require('tar')
+var Packer = require("fstream-npm")
+var fs = require('fs')
+var zlib = require('zlib')
+var exec = require('child_process').exec;
+var crypto = require('crypto');
+var fstream = require("fstream")
 var raft = require('../../raft')
+var Stats = require('./stats')
 
 function getSpawnOptions(app) {
 	var engine = (app.engines || app.engine || {
@@ -82,12 +90,110 @@ Spawner.prototype.trySpawn = function(app, callback) {
 			if (err) {
 				return callback(err);
 			}
-
+			console.log('dsfsdfsdfsdf')
 			self.spawn(repo, callback);
-		});
+
+		})
 	});
 };
 
+//
+// ### function rmApp (appsDir, app, callback)
+// #### @appsDir {string} Root for all application source files.
+// #### @app {App} Application to remove directories for.
+// #### @callback {function} Continuation passed to respond to.
+// Removes all source code associated with the specified `app`.
+//
+Spawner.prototype.snapshot = function(repo, app, callback) {
+	var sha = crypto.createHash('sha1')
+	console.log(repo.appDir)
+	var id = raft.common.uuid()
+	var tarPath = path.join(raft.directories.tmp, id)
+	var tar = new Packer({
+		path : repo.appDir,
+		type : "Directory",
+		isDirectory : true
+	})
+
+	function updateSha(chunk) {
+		console.log(chunk)
+		sha.update(chunk);
+	}
+
+	function onError(err) {
+		err.usage = 'tar -cvz . | curl -sSNT- HOST/deploy/USER/APP';
+		err.blame = {
+			type : 'system',
+			message : 'Unable to unpack tarball'
+		};
+		console.log(err)
+		return callback(err);
+	}
+
+	function onEnd() {
+		//
+		// Stop updating the sha since the stream is now closed.
+		//
+		tar.removeListener('data', updateSha);
+
+		var hash = sha.digest('hex');
+
+		raft.mongoose.Snapshot.find({
+			hash : hash
+		}, function(err, snapshot) {
+			if (err) {
+				return callback(err);
+			}
+			console.log(tarPath, path.join(repo._snapshotDir, app.user, hash + '.tar'))
+			if (!snapshot) {
+				fs.rename(tarPath, path.join(repo._snapshotDir, app.user, hash + '.tar'), function(err) {
+					if (err) {
+						return callback(err);
+					}
+
+					new raft.mongoose.Snapshot({
+						hash : hash,
+						tar : path.join(repo._snapshotDir, app.user, hash + '.tar'),
+						user : app.user,
+						name : app.name
+					}).save(function(err) {
+						if (err) {
+							return callback(err);
+						}
+						raft.mongoose.Snapshot.find({
+							hash : hash
+						}, function(err, snapshot) {
+							if (err) {
+								return callback(err);
+							}
+
+							callback(null, snapshot)
+						})
+					})
+				});
+			} else {
+				fs.unlink(tarPath, function(err) {
+					if (err) {
+						return callback(err);
+					}
+					callback(null, snapshot)
+
+				})
+			}
+		})
+	}
+
+
+	console.log(tar)
+	tar.on("error", onError).pipe(zlib.Gzip()).on("error", onError).on('data', updateSha).pipe(fstream.Writer({
+		type : "File",
+		path : tarPath
+	})).on("error", onError).on("end", onEnd)
+	if (tar.chunks) {
+		tar.chunks.forEach(updateSha);
+	}
+
+};
 //
 // ### function rmApp (appsDir, app, callback)
 // #### @appsDir {string} Root for all application source files.
@@ -152,7 +258,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 	var foreverOptions;
 	var carapaceBin;
 	var timeout;
-	var loadWatch;
 	var error;
 
 	try {
@@ -261,7 +366,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 				drone.removeListener('exit', onExit);
 				drone.removeListener('message', onCarapacePort);
 				clearTimeout(timeout);
-				clearInterval(loadWatch);
 			}
 		}
 
@@ -291,36 +395,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			}
 		}
 
-		function updateLoad() {
-			getPid(result.pid, function(err, loadData) {
-				if (err) {
-					return clearInterval(loadWatch);
-				}
-				result.load = loadData
-				if (loadWatch == false) {
-					return
-				}
-				raft.mongoose.Load.findOne({
-					name : meta.name,
-					user : meta.user,
-					uid : result.data.uid,
-					pid : result.pid
-				}, function(err, load) {
-
-					if (err || !loadData.pcpu || loadWatch == false) {
-						return
-					}
-					load.time.push(Date.now())
-					load.pcpu.push(loadData.pcpu)
-					load.rssize.push(loadData.rssize)
-					load.vsz.push(loadData.vsz)
-					load.save(function() {
-
-					})
-				})
-			})
-		}
-
 		//
 		// When the drone starts, update the result for monitoring software
 		//
@@ -336,7 +410,12 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 				outFile : outFile,
 				errFile : errFile
 			}
-			result.load = {}
+			result.stats = new Stats({
+				name : meta.name,
+				user : meta.user,
+				pid : result.pid,
+				uid : uid
+			})
 
 			var rpc = result.rpc = new raft.common.Module(function(data) {
 				drone.child.send({
@@ -348,18 +427,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 				if (message.data && message.cmd && message.cmd === 'rpc') {
 					result.rpc.requestEvent(message.data);
 				}
-			})
-			loadWatch = setInterval(function() {
-				updateLoad()
-			}, 5000)
-
-			new raft.mongoose.Load({
-				name : meta.name,
-				user : meta.user,
-				uid : result.data.uid,
-				pid : result.pid
-			}).save(function(err) {
-				updateLoad()
 			})
 		}
 
@@ -394,8 +461,9 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 				drone.removeListener('message', onCarapacePort);
 				clearTimeout(timeout);
 			}
-			clearInterval(loadWatch);
-			loadWatch = false
+			result.stats ? result.stats.kill(function() {
+
+			}) : null
 		}
 
 		function onTimeout() {
@@ -410,7 +478,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			error.stdout = stdout.join('\n');
 			error.stderr = stderr.join('\n');
 
-			clearInterval(loadWatch);
 			callback(error);
 		}
 
