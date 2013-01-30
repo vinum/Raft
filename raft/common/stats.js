@@ -43,7 +43,7 @@ Stats.prototype.timmer = function() {
 			return
 		}
 		self.data = loadData
-		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
+		exec('du -sh ' + self.meta.dir, function(error, stdout, stderr) {
 			self.data = loadData
 			self.data.disk = stdout
 			console.log([stdout, stderr])
