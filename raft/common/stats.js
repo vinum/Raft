@@ -20,21 +20,8 @@ function Stats(meta) {
 	this.isKill = false
 	this.data = {}
 	this.meta = meta
-	new raft.mongoose.Stats({
-		name : meta.name,
-		user : meta.user,
-		uid : meta.uid
-	}).save(function(err) {
-		raft.mongoose.Stats.findOne({
-			name : meta.name,
-			user : meta.user,
-			uid : meta.uid
-		}, function(err, statsObject) {
-			self.statsObject = statsObject
-			self.timmer()
-			console.log(self)
-		})
-	})
+
+	self.timmer()
 };
 
 //
@@ -57,7 +44,9 @@ Stats.prototype.timmer = function() {
 		}
 		self.data = loadData
 		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
-console.log(stdout)
+			console.log(stdout)
+			self.data = loadData
+			self.data.disk = stdout.split('	')[0]
 			new raft.mongoose.Stats({
 				pcpu : loadData.pcpu,
 				rssize : loadData.rssize,
