@@ -45,8 +45,7 @@ Stats.prototype.timmer = function() {
 		self.data = loadData
 		exec('du -sh ' + self.meta.dir, function(error, stdout, stderr) {
 			self.data = loadData
-			self.data.disk = stdout
-			console.log([stdout, stderr])
+			self.data.disk = stdout.split('\t')[0]
 			new raft.mongoose.Stats({
 				pcpu : loadData.pcpu,
 				rssize : loadData.rssize,
