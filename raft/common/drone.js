@@ -255,14 +255,14 @@ Drone.prototype.setEnv = function(key, value, name, user, callback) {
 		name : name,
 		key : key
 	}, function(err, env) {
-		if(!) {
+		if (!env) {
 			new raft.mongoose.Env({
 				user : user,
 				name : name,
 				key : key,
 				value : value
 			}).save(callback)
-		}else {
+		} else {
 			env.value = value
 			env.save(callback)
 		}
@@ -286,7 +286,7 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 		name : name,
 		key : key
 	}, function(err, env) {
-		if(!) {
+		if(!env) {
 			callback(new Error('cant find key for env'))
 		}else {
 			callback(null, env)
