@@ -60,6 +60,9 @@ var Exposed = module.exports = function(data, id, user, cb) {
 			error = {
 				message : err.message,
 				stack : err.stack,
+				stdout : err.stdout,
+				stderr : err.stderr,
+				code : code || 1000,
 				code : code || 1000,
 				method : data.method,
 				params : data.params
