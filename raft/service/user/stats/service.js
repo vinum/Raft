@@ -21,7 +21,7 @@ exports.run = function(rpc) {
 			test : 'some great data'
 		}, 200);
 	})
-	rpc.expose('stats.uid.load', function listHosts(uid) {
+	rpc.expose('stats.uid.load', function listHosts(uid, limit) {
 		var user = this.user
 		var exposed = this;
 		var by = {
@@ -32,7 +32,7 @@ exports.run = function(rpc) {
 		}
 
 		var query = raft.mongoose.Stats.find(by)
-		query.where('time').limit(5)
+		query.sort('-time').limit(limit || 10)
 		query.exec(function(err, data) {
 			if (err) {
 				return exposed.error(err);
@@ -44,7 +44,7 @@ exports.run = function(rpc) {
 		});
 
 	})
-	rpc.expose('stats.package.load', function listHosts(name) {
+	rpc.expose('stats.package.load', function listHosts(name, limit) {
 		var user = this.user
 		var exposed = this;
 		var by = {
@@ -53,6 +53,7 @@ exports.run = function(rpc) {
 		}
 		var query = raft.mongoose.Stats.find(by)
 
+		query.sort('-time').limit(limit || 10)
 		query.exec(function(err, data) {
 			if (err) {
 				return exposed.error(err);
@@ -65,7 +66,7 @@ exports.run = function(rpc) {
 		});
 
 	})
-	rpc.expose('stats.user.load', function listHosts() {
+	rpc.expose('stats.user.load', function listHosts(limit) {
 		var user = this.user
 		var exposed = this;
 		var by = {
@@ -73,6 +74,7 @@ exports.run = function(rpc) {
 		}
 
 		var query = raft.mongoose.Stats.find(by)
+		query.sort('-name')
 
 		query.exec(function(err, data) {
 			if (err) {

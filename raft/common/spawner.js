@@ -420,7 +420,8 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 					name : meta.name,
 					user : meta.user,
 					pid : result.pid,
-					uid : uid
+					uid : uid,
+					dir : repo.appDir
 				})
 
 				var rpc = result.rpc = new raft.common.Module(function(data) {

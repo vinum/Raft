@@ -18,7 +18,7 @@ function Stats(meta) {
 	var self = this
 	this.statsObject = null
 	this.isKill = false
-	this.data = null
+	this.data = {}
 	this.meta = meta
 	new raft.mongoose.Stats({
 		name : meta.name,
@@ -56,16 +56,23 @@ Stats.prototype.timmer = function() {
 			return
 		}
 		self.data = loadData
-		statsObject.time.push(Date.now())
-		statsObject.pcpu.push(loadData.pcpu)
-		statsObject.rssize.push(loadData.rssize)
-		statsObject.vsz.push(loadData.vsz)
-		statsObject.save(function() {
-			self.emit('update')
-			setTimeout(function() {
-				self.timmer()
-			}, 10000)
-		})
+		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
+
+			new raft.mongoose.Stats({
+				pcpu : loadData.pcpu,
+				rssize : loadData.rssize,
+				vsz : loadData.vsz,
+				name : self.meta.name,
+				user : self.meta.user,
+				uid : self.meta.uid,
+				disk : stdout.split('	')[0]
+			}).save(function() {
+				self.emit('update')
+				setTimeout(function() {
+					self.timmer()
+				}, 10000)
+			})
+		});
 	})
 }
 Stats.prototype.kill = function(callback) {
