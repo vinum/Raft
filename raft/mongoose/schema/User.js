@@ -207,7 +207,7 @@ UserSchema.statics.testBucketKey = function(bucketKey, cb) {
 	})
 }
 module.exports = mongoose.model('User', UserSchema);
-return;
+
 module.exports.remove({}, function() {
 	new module.exports({
 		username : 'bob',
