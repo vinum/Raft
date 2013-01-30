@@ -8,6 +8,7 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var events = require('events');
+var exec = require('child_process').exec;
 var getPid = require('ps-pid');
 var restify = require('restify');
 
@@ -32,7 +33,6 @@ util.inherits(Stats, events.EventEmitter);
 module.exports = Stats
 
 Stats.prototype.timmer = function() {
-	var statsObject = this.statsObject
 	var self = this
 	getPid(this.meta.pid, function(err, loadData) {
 		if (err) {
@@ -44,9 +44,9 @@ Stats.prototype.timmer = function() {
 		}
 		self.data = loadData
 		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
-			console.log(stdout)
 			self.data = loadData
 			self.data.disk = stdout.split('	')[0]
+			console.log(self.data)
 			new raft.mongoose.Stats({
 				pcpu : loadData.pcpu,
 				rssize : loadData.rssize,
