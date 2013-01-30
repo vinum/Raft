@@ -17,6 +17,7 @@ function authSocket(data, socket, callback) {
 			})
 			rpc.user = user
 			rpc.functions = raft.service.rpc[user.zone].functions;
+
 			callback(null, rpc)
 			return;
 		}
@@ -43,6 +44,7 @@ module.exports = function(service) {
 	//
 	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
 	io.set("origins", "*:*|*");
+	io.set('log level', 1);
 	io.set('transports', ['jsonp-polling']);
 	io.sockets.on('connection', function(socket) {
 		socket.on('login', function(data) {

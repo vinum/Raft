@@ -57,7 +57,7 @@ Stats.prototype.timmer = function() {
 		}
 		self.data = loadData
 		exec('du -sh ' + self.meta.appDir, function(error, stdout, stderr) {
-
+console.log(stdout)
 			new raft.mongoose.Stats({
 				pcpu : loadData.pcpu,
 				rssize : loadData.rssize,
