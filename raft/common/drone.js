@@ -608,7 +608,7 @@ Drone.prototype._formatRecord = function(record, app) {
 	console.log(record, app)
 	var response = raft.common.clone(record.data);
 	//response.repository = null;
-	delete response.spawnWith
+	//delete response.spawnWith
 	if (record.socket && record.socket.port) {
 		response.port = record.socket.port;
 		response.host = record.socket.host;
