@@ -617,6 +617,8 @@ Drone.prototype._formatRecord = function(record, app) {
 
 	response.host = response.host || this.host || 'localhost';
 	response.load = record.load;
+	response.stdout = record.stdout;
+	response.stderr = record.stderr;
 
 	if (app) {
 		response.name = app.name;
