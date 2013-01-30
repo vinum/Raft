@@ -14,7 +14,7 @@ var Stats = new Schema({
 	user : String,
 	vsz : Number,
 	uid : String,
-	disk : String
+	disk : Number
 });
 
 module.exports = mongoose.model('Stats', Stats);
