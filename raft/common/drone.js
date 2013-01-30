@@ -245,23 +245,28 @@ Drone.prototype.clean = function(app, user, callback) {
 // Stops the potentially running application then removes all dependencies
 // and source files associated with the application.
 //
-Drone.prototype.setEnv = function(key, val, name, user, callback) {
+Drone.prototype.setEnv = function(key, value, name, user, callback) {
 	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
 		return callback(new Error('Cannot restart application that is not running.'));
 	}
 
-	var self = this
-	var record = this.apps[user][name]
-	var keys = Object.keys(record.drones)
-	var processes = [];
-	function setEnv(uid, next) {
-		record.drones[uid].rpc.invoke('env.set', [key, val], next)
-	}
-
-
-	async.forEach(keys, setEnv, function() {
-		callback(null);
-	});
+	raft.mongoose.Env.findOne({
+		user : user,
+		name : name,
+		key : key
+	}, function(err, env) {
+		if(!) {
+			new raft.mongoose.Env({
+				user : user,
+				name : name,
+				key : key,
+				value : value
+			}).save(callback)
+		}else {
+			env.value = value
+			env.save(callback)
+		}
+	})
 };
 //
 // ### function getEnv (key, name, user, callback)
@@ -276,22 +281,17 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 	}
 
 	var self = this
-	var record = this.apps[user][name]
-	var keys = Object.keys(record.drones)
-	var processes = {};
-
-	function setEnv(uid, next) {
-		record.drones[uid].rpc.invoke('env.get', [key], function(err, result) {
-			processes[uid] = result.env
-			next()
-		})
-	}
-
-
-	async.forEach(keys, setEnv, function() {
-		callback(null, processes);
-	});
-
+	raft.mongoose.Env.findOne({
+		user : user,
+		name : name,
+		key : key
+	}, function(err, env) {
+		if(!) {
+			callback(new Error('cant find key for env'))
+		}else {
+			callback(null, env)
+		}
+	})
 };
 //
 // ### function getEnv (key, name, user, callback)
@@ -605,7 +605,7 @@ Drone.prototype._update = function(record, existing, updated, callback) {
 // Formats the specified `record` based on the `record.socket`.
 //
 Drone.prototype._formatRecord = function(record, app) {
-
+	console.log(record, app)
 	var response = raft.common.clone(record.data);
 	//response.repository = null;
 	delete response.spawnWith

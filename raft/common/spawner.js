@@ -26,7 +26,7 @@ var fstream = require("fstream")
 var raft = require('../../raft')
 var Stats = require('./stats')
 
-function getSpawnOptions(app) {
+function getSpawnOptions(app, callback) {
 	var engine = (app.engines || app.engine || {
 		node : app.engine
 	}).node;
@@ -44,6 +44,15 @@ function getSpawnOptions(app) {
 		mixin(env, app.env);
 	options.env = env;
 	options.command = command;
+	raft.mongoose.Env.find({
+		user : app.user,
+		name : app.name
+	}, function(err, envs) {
+		envs.forEach(function(_env) {
+			options.env[_env.key] = _env.value
+		})
+		callback(null, options)
+	})
 	return options;
 }
 
@@ -259,246 +268,243 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 	var carapaceBin;
 	var timeout;
 	var error;
+	getSpawnOptions(app, function(err, spawnOptions) {
 
-	try {
-		var spawnOptions = getSpawnOptions(app);
-	} catch (e) {
-		return callback(e);
-	}
+		var uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
-	var uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
+		var logFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
+		var outFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
+		var errFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
 
-	var logFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
-	var outFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
-	var errFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
+		foreverOptions = {
+			fork : true,
+			silent : true,
+			stdio : ['ipc', 'pipe', 'pipe'],
+			cwd : repo.homeDir,
+			hideEnv : [],
+			env : spawnOptions.env,
+			killTree : true,
+			uid : uid,
+			killTTL : 0,
+			minUptime : this.minUptime,
+			command : spawnOptions.command,
+			options : [spawnOptions.carapaceBin].concat(options),
+			'outFile' : outFile,
+			'errFile' : errFile
+		};
 
-	foreverOptions = {
-		fork : true,
-		silent : true,
-		stdio : ['ipc', 'pipe', 'pipe'],
-		cwd : repo.homeDir,
-		hideEnv : [],
-		env : spawnOptions.env,
-		killTree : true,
-		uid : uid,
-		killTTL : 0,
-		minUptime : this.minUptime,
-		command : spawnOptions.command,
-		options : [spawnOptions.carapaceBin].concat(options),
-		'outFile' : outFile,
-		'errFile' : errFile
-	};
+		foreverOptions.forever = typeof self.maxRestart === 'undefined';
 
-	foreverOptions.forever = typeof self.maxRestart === 'undefined';
-
-	if ( typeof self.maxRestart !== 'undefined') {
-		foreverOptions.max = self.maxRestart;
-	}
-
-	//
-	// Before we attempt to spawn, let's check if the startPath actually points to a file
-	// Trapping this specific error is useful as the error indicates an incorrect
-	// scripts.start property in the package.json
-	//
-	fs.stat(repo.startScript, function(err, stats) {
-		if (err) {
-			var err = new Error('package.json error: ' + 'can\'t find starting script: ' + repo.app.scripts.start);
-			err.blame = {
-				type : 'user',
-				message : 'Package.json start script declared but not found'
-			}
-			return callback(err);
-		}
-
-		foreverOptions.options.push(script);
-		carapaceBin = foreverOptions.options.shift();
-		console.log(foreverOptions)
-		var drone = new forever.Monitor(carapaceBin, foreverOptions);
-		drone.on('error', function() {
-			//
-			// 'error' event needs to be caught, otherwise
-			// the haibu process will die
-			//
-		});
-
-		//
-		// Log data from `drone.stdout` to haibu
-		//
-		function onStdout(data) {
-			data = data.toString();
-
-			if (!responded) {
-				stdout = stdout.concat(data.split('\n').filter(function(line) {
-					return line.length > 0
-				}));
-			}
+		if ( typeof self.maxRestart !== 'undefined') {
+			foreverOptions.max = self.maxRestart;
 		}
 
 		//
-		// Log data from `drone.stderr` to haibu
+		// Before we attempt to spawn, let's check if the startPath actually points to a file
+		// Trapping this specific error is useful as the error indicates an incorrect
+		// scripts.start property in the package.json
 		//
-		function onStderr(data) {
-			data = data.toString();
-
-			if (!responded) {
-				stderr = stderr.concat(data.split('\n').filter(function(line) {
-					return line.length > 0
-				}));
-			}
-		}
-
-		//
-		// If the `forever.Monitor` instance emits an error then
-		// pass this error back up to the callback.
-		//
-		// (remark) this may not work if haibu starts two apps at the same time
-		//
-		function onError(err) {
-			console.log(err)
-			if (!responded) {
-				errState = true;
-				responded = true;
-				callback(err);
-
-				//
-				// Remove listeners to related events.
-				//
-				drone.removeListener('exit', onExit);
-				drone.removeListener('message', onCarapacePort);
-				clearTimeout(timeout);
-			}
-		}
-
-		//
-		// When the carapace provides the port that the drone
-		// has bound to then respond to the callback
-		//
-		function onCarapacePort(info) {
-			if (!responded && info && info.event === 'port') {
-				responded = true;
-				result.socket = {
-					host : self.host,
-					port : info.data.port
-				};
-
-				drone.minUptime = 0;
-
-				callback(null, result);
-
-				//
-				// Remove listeners to related events
-				//
-				drone.removeListener('exit', onExit);
-				drone.removeListener('error', onError);
-				clearTimeout(timeout);
-
-			}
-		}
-
-		//
-		// When the drone starts, update the result for monitoring software
-		//
-		function onChildStart(monitor, data) {
-
-			result.process = monitor.child
-			result.monitor = drone
-
-			result.data = data
-			result.pid = monitor.childData.pid
-			result.pkg = app
-			result.logs = {
-				outFile : outFile,
-				errFile : errFile,
-				stdout : stdout,
-				stderr : stderr
-			}
-			result.stats = new Stats({
-				name : meta.name,
-				user : meta.user,
-				pid : result.pid,
-				uid : uid
-			})
-
-			var rpc = result.rpc = new raft.common.Module(function(data) {
-				drone.child.send({
-					cmd : 'rpc',
-					data : data
-				})
-			})
-			drone.child.on('message', function(message) {
-				if (message.data && message.cmd && message.cmd === 'rpc') {
-					result.rpc.requestEvent(message.data);
+		fs.stat(repo.startScript, function(err, stats) {
+			if (err) {
+				var err = new Error('package.json error: ' + 'can\'t find starting script: ' + repo.app.scripts.start);
+				err.blame = {
+					type : 'user',
+					message : 'Package.json start script declared but not found'
 				}
-			})
-		}
+				return callback(err);
+			}
 
-		//
-		// When the drone stops, update the result for monitoring software
-		//
-		function onChildRestart(monitor, data) {
+			foreverOptions.options.push(script);
+			carapaceBin = foreverOptions.options.shift();
+			console.log(foreverOptions)
+			var drone = new forever.Monitor(carapaceBin, foreverOptions);
+			drone.on('error', function() {
+				//
+				// 'error' event needs to be caught, otherwise
+				// the haibu process will die
+				//
+			});
 
-		}
+			//
+			// Log data from `drone.stdout` to haibu
+			//
+			function onStdout(data) {
+				data = data.toString();
 
-		//
-		// If the drone exits prematurely then respond with an error
-		// containing the data we receieved from `stderr`
-		//
-		function onExit() {
-			if (!responded) {
-				errState = true;
-				responded = true;
+				if (!responded) {
+					stdout = stdout.concat(data.split('\n').filter(function(line) {
+						return line.length > 0
+					}));
+				}
+			}
+
+			//
+			// Log data from `drone.stderr` to haibu
+			//
+			function onStderr(data) {
+				data = data.toString();
+
+				if (!responded) {
+					stderr = stderr.concat(data.split('\n').filter(function(line) {
+						return line.length > 0
+					}));
+				}
+			}
+
+			//
+			// If the `forever.Monitor` instance emits an error then
+			// pass this error back up to the callback.
+			//
+			// (remark) this may not work if haibu starts two apps at the same time
+			//
+			function onError(err) {
+				console.log(err)
+				if (!responded) {
+					errState = true;
+					responded = true;
+					callback(err);
+
+					//
+					// Remove listeners to related events.
+					//
+					drone.removeListener('exit', onExit);
+					drone.removeListener('message', onCarapacePort);
+					clearTimeout(timeout);
+				}
+			}
+
+			//
+			// When the carapace provides the port that the drone
+			// has bound to then respond to the callback
+			//
+			function onCarapacePort(info) {
+				if (!responded && info && info.event === 'port') {
+					responded = true;
+					result.socket = {
+						host : self.host,
+						port : info.data.port
+					};
+
+					drone.minUptime = 0;
+
+					callback(null, result);
+
+					//
+					// Remove listeners to related events
+					//
+					drone.removeListener('exit', onExit);
+					drone.removeListener('error', onError);
+					clearTimeout(timeout);
+
+				}
+			}
+
+			//
+			// When the drone starts, update the result for monitoring software
+			//
+			function onChildStart(monitor, data) {
+
+				result.process = monitor.child
+				result.monitor = drone
+
+				result.data = data
+				result.pid = monitor.childData.pid
+				result.pkg = app
+				result.logs = {
+					outFile : outFile,
+					errFile : errFile,
+					stdout : stdout,
+					stderr : stderr
+				}
+				result.stats = new Stats({
+					name : meta.name,
+					user : meta.user,
+					pid : result.pid,
+					uid : uid
+				})
+
+				var rpc = result.rpc = new raft.common.Module(function(data) {
+					drone.child.send({
+						cmd : 'rpc',
+						data : data
+					})
+				})
+				drone.child.on('message', function(message) {
+					if (message.data && message.cmd && message.cmd === 'rpc') {
+						result.rpc.requestEvent(message.data);
+					}
+				})
+			}
+
+			//
+			// When the drone stops, update the result for monitoring software
+			//
+			function onChildRestart(monitor, data) {
+
+			}
+
+			//
+			// If the drone exits prematurely then respond with an error
+			// containing the data we receieved from `stderr`
+			//
+			function onExit() {
+				if (!responded) {
+					errState = true;
+					responded = true;
+					error = new Error('Error spawning drone');
+					error.blame = {
+						type : 'user',
+						message : 'Script prematurely exited'
+					}
+					error.stdout = stdout.join('\n');
+					error.stderr = stderr.join('\n');
+					callback(error);
+
+					//
+					// Remove listeners to related events.
+					//
+					drone.removeListener('error', onError);
+					drone.removeListener('message', onCarapacePort);
+					clearTimeout(timeout);
+				}
+				result.stats ? result.stats.kill(function() {
+
+				}) : null
+			}
+
+			function onTimeout() {
+				drone.removeListener('exit', onExit);
+
+				drone.stop();
 				error = new Error('Error spawning drone');
 				error.blame = {
 					type : 'user',
-					message : 'Script prematurely exited'
-				}
+					message : 'Script took too long to listen on a socket'
+				};
 				error.stdout = stdout.join('\n');
 				error.stderr = stderr.join('\n');
+
 				callback(error);
-
-				//
-				// Remove listeners to related events.
-				//
-				drone.removeListener('error', onError);
-				drone.removeListener('message', onCarapacePort);
-				clearTimeout(timeout);
 			}
-			result.stats ? result.stats.kill(function() {
 
-			}) : null
-		}
+			//
+			// Listen to the appropriate events and start the drone process.
+			//
+			drone.on('stdout', onStdout);
+			drone.on('stderr', onStderr);
+			drone.once('exit', onExit);
+			drone.once('error', onError);
+			drone.once('start', onChildStart);
+			drone.on('restart', onChildRestart);
 
-		function onTimeout() {
-			drone.removeListener('exit', onExit);
+			drone.on('message', onCarapacePort);
 
-			drone.stop();
-			error = new Error('Error spawning drone');
-			error.blame = {
-				type : 'user',
-				message : 'Script took too long to listen on a socket'
-			};
-			error.stdout = stdout.join('\n');
-			error.stderr = stderr.join('\n');
+			timeout = setTimeout(onTimeout, 20000);
 
-			callback(error);
-		}
+			drone.start();
 
-		//
-		// Listen to the appropriate events and start the drone process.
-		//
-		drone.on('stdout', onStdout);
-		drone.on('stderr', onStderr);
-		drone.once('exit', onExit);
-		drone.once('error', onError);
-		drone.once('start', onChildStart);
-		drone.on('restart', onChildRestart);
-
-		drone.on('message', onCarapacePort);
-
-		timeout = setTimeout(onTimeout, 20000);
-
-		drone.start();
-
+		});
 	});
+
 };
 

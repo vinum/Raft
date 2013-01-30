@@ -15,6 +15,7 @@ var raft = require('../../raft')
 function Services() {
 	events.EventEmitter.call(this);
 	this.rpc = {}
+	this.users = {}
 };
 
 //
