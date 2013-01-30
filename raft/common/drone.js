@@ -246,9 +246,7 @@ Drone.prototype.clean = function(app, user, callback) {
 // and source files associated with the application.
 //
 Drone.prototype.setEnv = function(key, value, name, user, callback) {
-	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
-		return callback(new Error('Cannot restart application that is not running.'));
-	}
+	
 
 	raft.mongoose.Env.findOne({
 		user : user,
@@ -276,9 +274,7 @@ Drone.prototype.setEnv = function(key, value, name, user, callback) {
 // and source files associated with the application.
 //
 Drone.prototype.getEnv = function(key, name, user, callback) {
-	if (!this.apps || !this.apps[user] || !this.apps[user][name]) {
-		return callback(new Error('Cannot restart application that is not running.'));
-	}
+	
 
 	var self = this
 	raft.mongoose.Env.findOne({
