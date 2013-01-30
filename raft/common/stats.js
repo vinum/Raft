@@ -54,7 +54,7 @@ Stats.prototype.timmer = function() {
 				name : self.meta.name,
 				user : self.meta.user,
 				uid : self.meta.uid,
-				disk : stdout
+				disk : stdout.split('	')[0]
 			}).save(function() {
 				self.emit('update')
 				setTimeout(function() {
