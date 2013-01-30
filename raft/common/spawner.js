@@ -408,7 +408,9 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			result.pkg = app
 			result.logs = {
 				outFile : outFile,
-				errFile : errFile
+				errFile : errFile,
+				stdout : stdout,
+				stderr : stderr
 			}
 			result.stats = new Stats({
 				name : meta.name,
