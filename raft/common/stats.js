@@ -18,6 +18,7 @@ function Stats(meta) {
 	var self = this
 	this.statsObject = null
 	this.isKill = false
+	this.data = null
 	this.meta = meta
 	new raft.mongoose.Stats({
 		name : meta.name,
@@ -54,6 +55,7 @@ Stats.prototype.timmer = function() {
 		if (err || !loadData.pcpu || self.isKill !== false) {
 			return
 		}
+		self.data = loadData
 		statsObject.time.push(Date.now())
 		statsObject.pcpu.push(loadData.pcpu)
 		statsObject.rssize.push(loadData.rssize)

@@ -246,7 +246,6 @@ Drone.prototype.clean = function(app, user, callback) {
 // and source files associated with the application.
 //
 Drone.prototype.setEnv = function(key, value, name, user, callback) {
-	
 
 	raft.mongoose.Env.findOne({
 		user : user,
@@ -274,7 +273,6 @@ Drone.prototype.setEnv = function(key, value, name, user, callback) {
 // and source files associated with the application.
 //
 Drone.prototype.getEnv = function(key, name, user, callback) {
-	
 
 	var self = this
 	raft.mongoose.Env.findOne({
@@ -282,9 +280,9 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 		name : name,
 		key : key
 	}, function(err, env) {
-		if(!env) {
+		if (!env) {
 			callback(new Error('cant find key for env'))
-		}else {
+		} else {
 			callback(null, env)
 		}
 	})
@@ -612,7 +610,7 @@ Drone.prototype._formatRecord = function(record, app) {
 	}
 
 	response.host = response.host || this.host || 'localhost';
-	response.load = record.load;
+	response.stats = record.stats.data;
 	response.stdout = record.stdout;
 	response.stderr = record.stderr;
 
