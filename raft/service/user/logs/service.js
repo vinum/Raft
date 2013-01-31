@@ -16,7 +16,7 @@ var raft = require('../../../../raft');
 // Creates the Journey router which represents the `raft` Drone webservice.
 //
 exports.run = function(rpc) {
-
+	
 	rpc.expose('logs.get', function listHosts(uid, name) {
 		var user = this.user.username
 		var exposed = this

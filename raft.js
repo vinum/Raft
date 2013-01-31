@@ -43,7 +43,8 @@ raft.directories = raft.common.mkdir({
 	tar : path.join(__dirname, 'tar'),
 	package : path.join(__dirname, 'package'),
 	logs : path.join(__dirname, 'logs'),
-	bucket : path.join(__dirname, 'bucket')
+	bucket : path.join(__dirname, 'bucket'),
+	node : path.join(__dirname, 'node')
 
 })
 //
@@ -78,6 +79,14 @@ raft.common.onSIGINT(function(next) {
 //transports
 //
 raft.transports = require('./raft/common/transports');
+//
+//balancer
+//
+raft.Nodev = require('./raft/common/nodev').Nodev;
+raft.nodev = new raft.Nodev({
+	install_dir : raft.directories.node,
+	tmp_dir : raft.directories.tmp
+});
 //
 //transports
 //

@@ -30,29 +30,75 @@ function getSpawnOptions(app, callback) {
 	var engine = (app.engines || app.engine || {
 		node : app.engine
 	}).node;
+	var engineDir = raft.directories.node
+	var nodeVersions = engineDir && fs.readdirSync(engineDir)
 	var env = {}
 	var command = 'node'
 	var nodeDir
 	var version
 	var cwd;
 
+	if ( typeof engine !== 'string') {
+		engine = '0.6.x';
+	}
 	var options = {};
+	if (nodeVersions) {
+		version = semver.maxSatisfying(nodeVersions, engine);
+		if (!version) {
+			var err = new Error(['Haibu could not find a node.js version satisfying specified', 'node.js engine `' + String(engine) + '`. Try specifying a different ' + 'version of node.js', 'in your package.json, such as `0.8.x`.'].join('\n'));
+			err.blame = {
+				type : 'user',
+				message : 'Repository configuration'
+			}
+			throw err;
+		}
+		nodeDir = path.join(engineDir, version);
+		options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
 
-	options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
-
-	if (app.env)
-		mixin(env, app.env);
-	options.env = env;
-	options.command = command;
-	raft.mongoose.Env.find({
-		user : app.user,
-		name : app.name
-	}, function(err, envs) {
-		envs.forEach(function(_env) {
-			options.env[_env.key] = _env.value
+		if (app.env)
+			mixin(env, app.env);
+		options.env = env;
+		options.command = command;
+		raft.mongoose.Env.find({
+			user : app.user,
+			name : app.name
+		}, function(err, envs) {
+			envs.forEach(function(_env) {
+				options.env[_env.key] = _env.value
+			})
+			callback(null, options)
 		})
-		callback(null, options)
-	})
+	} else {
+		raft.nodev.isInstalled(engine, function(err, engine) {
+
+			version = semver.maxSatisfying(nodeVersions, engine);
+			if (!version) {
+				var err = new Error(['Haibu could not find a node.js version satisfying specified', 'node.js engine `' + String(engine) + '`. Try specifying a different ' + 'version of node.js', 'in your package.json, such as `0.8.x`.'].join('\n'));
+				err.blame = {
+					type : 'user',
+					message : 'Repository configuration'
+				}
+				throw err;
+			}
+			nodeDir = path.join(engineDir, version);
+			options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
+
+			if (app.env)
+				mixin(env, app.env);
+			options.env = env;
+			options.command = command;
+			raft.mongoose.Env.find({
+				user : app.user,
+				name : app.name
+			}, function(err, envs) {
+				envs.forEach(function(_env) {
+					options.env[_env.key] = _env.value
+				})
+				callback(null, options)
+			})
+		})
+	}
+
 	return options;
 }
 
@@ -191,7 +237,6 @@ Spawner.prototype.snapshot = function(repo, app, callback) {
 			}
 		})
 	}
-
 
 	//console.log(tar)
 	tar.on("error", onError).pipe(zlib.Gzip()).on("error", onError).on('data', updateSha).pipe(fstream.Writer({
