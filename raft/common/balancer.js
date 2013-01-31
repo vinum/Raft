@@ -63,10 +63,11 @@ var Balancer = exports.Balancer = function(options) {
 	this.domainsTmp = {
 		//Domain : app
 	};
-	var stats = this.stats = {};
-	stats.requests = 0;
-	stats.bytesRead = 0;
-	stats.bytesWritten = 0;
+	this.stats = {
+		requests : 0,
+		bytesRead : 0,
+		bytesWritten : 0
+	};
 };
 
 //
