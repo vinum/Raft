@@ -257,12 +257,8 @@ Balancer.prototype.syncRequestsUpdate = function(msg) {
 		var selfDomain = selfDomains[domain]
 		for (var key in sentDomain.stats) {
 
-			self.stats.requests = self.stats.requests + sentDomain.stats[key].requests;
-			self.stats.bytesRead = self.stats.bytesRead + sentDomain.stats[key].bytesRead;
-			self.stats.bytesWritten = self.stats.bytesWritten + sentDomain.stats[key].bytesWritten;
-			
-			
-			
+			self.stats[key] = self.stats[key] + sentDomain.stats[key];
+
 			selfDomain.stats[key] = selfDomain.stats[key] + sentDomain.stats[key]
 		}
 	})
