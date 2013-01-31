@@ -286,7 +286,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			killTree : true,
 			uid : uid,
 			killTTL : 0,
-			minUptime : this.minUptime,
+			minUptime : self.minUptime,
 			command : spawnOptions.command,
 			options : [spawnOptions.carapaceBin].concat(options),
 			'outFile' : outFile,
