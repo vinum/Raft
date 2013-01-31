@@ -43,7 +43,7 @@ module.exports = function(service) {
 	// Create an `nssocket` TCP server
 	//
 	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
-	io.set("origins", "*:*");
+	//io.set("origins", "*:*");
 	io.set('log level', 1);
 	io.set('transports', ['websocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
 	io.sockets.on('connection', function(socket) {
