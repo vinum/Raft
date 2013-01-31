@@ -92,7 +92,7 @@ exports.run = function(rpc) {
 		var user = this.user
 		var exposed = this;
 		exposed.send({
-			stats : raft.balancer.balancer.domains[domain].stats
+			stats : raft.balancer.balancer.domains[host] ? raft.balancer.balancer.domains[host].stats : null
 		})
 	})
 };
