@@ -58,7 +58,7 @@ Stats.prototype.timmer = function() {
 				self.emit('update')
 				setTimeout(function() {
 					self.timmer()
-				}, 1000)
+				}, raft.config.get('timmer:stats') || 1000)
 			})
 		});
 	})

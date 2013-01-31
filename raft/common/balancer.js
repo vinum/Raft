@@ -390,7 +390,7 @@ exports.start = function(callback) {
 		exports.fork(function() {
 			callback()
 			exports.sync()
-			setInterval(exports.syncRequests, 1000)
+			setInterval(exports.syncRequests, raft.config.get('timmer:proxy') || 1000)
 		})
 	})
 }
