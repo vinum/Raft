@@ -88,4 +88,11 @@ exports.run = function(rpc) {
 		});
 
 	})
+	rpc.expose('stats.proxy.host', function listHosts(host) {
+		var user = this.user
+		var exposed = this;
+		exposed.send({
+			stats : raft.balancer.balancer.domains[domain].stats
+		})
+	})
 };

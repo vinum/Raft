@@ -24,6 +24,15 @@ process.on('message', function(msg) {
 			balancer.destroyDrone(msg.drone, msg.app)
 		} else if (cmd === 'sync') {
 			balancer.domains = msg.domains
+		} else if (cmd === 'syncRequests') {
+			process.send({
+				domains : balancer.domains
+			})
+			for (var domain in balancer.domains) {
+				balancer.domains[domain].stats.requests = 0
+				balancer.domains[domain].stats.bytesRead = 0
+				balancer.domains[domain].stats.bytesWritten = 0
+			}
 		}
 	}
 });

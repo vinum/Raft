@@ -243,6 +243,18 @@ Balancer.prototype.destroyDrone = function(drone, app, callback) {
 
 };
 
+Balancer.prototype.syncRequestsUpdate = function(msg) {
+	var domains = msg.domains
+	var selfDomains = this.domains
+	var domainKeys = Object.keys(domains)
+	domainKeys.forEach(function(domain) {
+		var sentDomain = domains[domain]
+		var selfDomain = selfDomains[domain]
+		for (var key in sentDomain.stats) {
+			selfDomain.stats[key] = selfDomain.stats[key] + sentDomain.stats[key]
+		}
+	})
+}
 //
 // ### Include Exports
 // Export other components in the module
@@ -367,10 +379,8 @@ exports.start = function(callback) {
 
 	exports.fork(function() {
 		exports.fork(function() {
-			exports.fork(function() {
-				exports.sync()
-				callback()
-			})
+			callback()
+			setInterval(exports.sync, 1000)
 		})
 	})
 }
