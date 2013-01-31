@@ -33,7 +33,7 @@ exports.run = function(rpc) {
 		var user = this.user.username
 		var exposed = this
 
-		raft.drone.getlogs(uid, name, user, 50, function(err, data) {
+		raft.drone.getlogs(uid, name, user, 100, function(err, data) {
 			if (err) {
 				exposed.error(err)
 			} else {
