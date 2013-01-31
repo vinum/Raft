@@ -12,7 +12,6 @@ process.on('uncaughtException', function(err) {
 });
 process.on('message', function(msg) {
 	var cmd;
-	console.log(msg)
 	if ( cmd = msg.cmd) {
 		if (cmd === 'addApp') {
 			balancer.addApp(msg.app)
@@ -28,6 +27,7 @@ process.on('message', function(msg) {
 			process.send({
 				domains : balancer.domains
 			})
+			console.log(balancer.domains)
 			for (var domain in balancer.domains) {
 				balancer.domains[domain].stats.requests = 0
 				balancer.domains[domain].stats.bytesRead = 0
