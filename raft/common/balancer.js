@@ -353,7 +353,7 @@ exports.sync = function() {
 	});
 }
 exports.fork = function(callback) {
-	var worker = cluster.fork();
+	var worker = cluster.fork().on('message', exports.balancer.syncRequestsUpdate.bind(exports.balancer));
 	callback()
 }
 //
