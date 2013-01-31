@@ -64,7 +64,5 @@ Stats.prototype.timmer = function() {
 	})
 }
 Stats.prototype.kill = function(callback) {
-	this.statsObject.end = Date.now()
 	this.isKill = true
-	this.statsObject.save(callback)
 }

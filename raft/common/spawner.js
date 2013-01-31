@@ -13,7 +13,7 @@ var events = require('events')
 var mixin = require('flatiron').common.mixin
 var async = require('flatiron').common.async
 var rimraf = require('flatiron').common.rimraf
-var repositories = require('haibu-repo')
+var repositories = require('../../../haibu-repo')
 var Repository = repositories.Repository
 var getPid = require('ps-pid');
 var tar = require('tar')
@@ -25,7 +25,6 @@ var crypto = require('crypto');
 var fstream = require("fstream")
 var raft = require('../../raft')
 var Stats = require('./stats')
-
 function getSpawnOptions(app, callback) {
 	var engine = (app.engines || app.engine || {
 		node : app.engine
@@ -39,22 +38,36 @@ function getSpawnOptions(app, callback) {
 	var cwd;
 
 	if ( typeof engine !== 'string') {
-		engine = '0.6.x';
+		engine = '0.8.x';
 	}
 	var options = {};
-	if (nodeVersions) {
-		version = semver.maxSatisfying(nodeVersions, engine);
-		if (!version) {
-			var err = new Error(['Haibu could not find a node.js version satisfying specified', 'node.js engine `' + String(engine) + '`. Try specifying a different ' + 'version of node.js', 'in your package.json, such as `0.8.x`.'].join('\n'));
-			err.blame = {
-				type : 'user',
-				message : 'Repository configuration'
-			}
-			throw err;
-		}
+
+	raft.nodev.checkInstall(engine, function(err, version) {
+		console.log(err, version)
 		nodeDir = path.join(engineDir, version);
 		options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
+		if (false) {
+			//
+			// Add node (should be configured with --no-npm) and -g modules to path of repo
+			//
+			if (semver.lt(version, '0.6.5')) {
+				options.forkShim = carapaceVersions ? path.join(options.carapaceBin, '..', '..', '..', 'node-fork', 'lib', 'fork.js') : true;
+			}
+			env.NODE_VERSION = 'v' + version;
+			env.NODE_PREFIX = nodeDir;
+			env.NODE_PATH = path.join(nodeDir, 'lib', 'node_modules');
+			env.NODE_CHANNEL_FD = 0;
+			var concatPATH = (process.env.PATH ? ':' + process.env.PATH : '');
+			env.PATH = path.join(nodeDir, 'bin') + ':' + path.join(nodeDir, 'node_modules') + concatPATH;
+			var concatCPATH = (process.env.CPATH ? ':' + process.env.CPATH : '');
+			env.CPATH = path.join(nodeDir, 'include') + ':' + path.join(nodeDir, 'include', 'node') + concatCPATH;
+			var concatLIBRARY_PATH = (process.env.LIBRARY_PATH ? ':' + process.env.LIBRARY_PATH : '');
+			env.LIBRARY_PATH = path.join(nodeDir, 'lib') + ':' + path.join(nodeDir, 'lib', 'node') + concatLIBRARY_PATH;
 
+			options.cwd = nodeDir;
+			command = path.join(nodeDir, 'bin', 'node');
+		}
+		console.log(options, command)
 		if (app.env)
 			mixin(env, app.env);
 		options.env = env;
@@ -68,36 +81,7 @@ function getSpawnOptions(app, callback) {
 			})
 			callback(null, options)
 		})
-	} else {
-		raft.nodev.isInstalled(engine, function(err, engine) {
-
-			version = semver.maxSatisfying(nodeVersions, engine);
-			if (!version) {
-				var err = new Error(['Haibu could not find a node.js version satisfying specified', 'node.js engine `' + String(engine) + '`. Try specifying a different ' + 'version of node.js', 'in your package.json, such as `0.8.x`.'].join('\n'));
-				err.blame = {
-					type : 'user',
-					message : 'Repository configuration'
-				}
-				throw err;
-			}
-			nodeDir = path.join(engineDir, version);
-			options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
-
-			if (app.env)
-				mixin(env, app.env);
-			options.env = env;
-			options.command = command;
-			raft.mongoose.Env.find({
-				user : app.user,
-				name : app.name
-			}, function(err, envs) {
-				envs.forEach(function(_env) {
-					options.env[_env.key] = _env.value
-				})
-				callback(null, options)
-			})
-		})
-	}
+	})
 
 	return options;
 }
@@ -145,7 +129,6 @@ Spawner.prototype.trySpawn = function(app, callback) {
 			if (err) {
 				return callback(err);
 			}
-			//console.log('dsfsdfsdfsdf')
 			self.spawn(repo, callback);
 
 		})
@@ -308,7 +291,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 	var responded = false;
 	var stderr = [];
 	var stdout = [];
-	var options = ['--plugin', 'net', '--plugin', 'rpc', '--plugin', 'env'];
+	var options = ['--plugin', 'net'];
 	var foreverOptions;
 	var carapaceBin;
 	var timeout;
@@ -323,7 +306,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 		foreverOptions = {
 			fork : true,
-			silent : true,
+			silent : false,
 			stdio : ['ipc', 'pipe', 'pipe'],
 			cwd : repo.homeDir,
 			hideEnv : [],
@@ -467,18 +450,6 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 					pid : result.pid,
 					uid : uid,
 					dir : repo.appDir
-				})
-
-				var rpc = result.rpc = new raft.common.Module(function(data) {
-					drone.child.send({
-						cmd : 'rpc',
-						data : data
-					})
-				})
-				drone.child.on('message', function(message) {
-					if (message.data && message.cmd && message.cmd === 'rpc') {
-						result.rpc.requestEvent(message.data);
-					}
 				})
 			}
 

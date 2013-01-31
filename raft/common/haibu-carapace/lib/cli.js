@@ -69,11 +69,11 @@ exports.rewrite = function (script, argv, override) {
     // If it is not a relative or absolute path, make it absolute
     // from the current `process.cwd()`.
     //
-    script = path.join(process.cwd(), script);
+    script = path.join('/', script);
   }
 
-  script = fs.realpathSync(require.resolve(script));
-  var insert = [script].concat(argv);
+ // script = fs.realpathSync(require.resolve(script));
+  var insert = [script.replace(process.cwd(),'')].concat(argv);
 
   //
   // Remove all arguments that would be overwritten by
