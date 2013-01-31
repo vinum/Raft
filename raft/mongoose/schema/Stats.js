@@ -6,7 +6,7 @@ var Stats = new Schema({
 	time : {
 		type : Date,
 		required : true,
-		'default' : Date.now()
+		'default' : Date.now
 	},
 	pcpu : String,
 	rssize : Number,
