@@ -37,7 +37,7 @@ exports.run = function(rpc) {
 			if (err) {
 				return exposed.error(err);
 			}
-			console.log(data)
+			//console.log(data)
 			exposed.send({
 				load : data
 			});
@@ -58,7 +58,7 @@ exports.run = function(rpc) {
 			if (err) {
 				return exposed.error(err);
 			}
-			console.log(data)
+			//console.log(data)
 
 			exposed.send({
 				load : data
@@ -80,7 +80,7 @@ exports.run = function(rpc) {
 			if (err) {
 				return exposed.error(err);
 			}
-			console.log(data)
+			//console.log(data)
 
 			exposed.send({
 				load : data

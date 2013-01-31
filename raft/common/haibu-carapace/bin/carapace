@@ -17,8 +17,8 @@ function onPluginError (info) {
   // If any of the plugins have failed to load then short
   // circuit this carapace process because it requested them all.
   //
-  console.log('Error loading plugin: ' + info.plugin);
-  console.log(info.error.message);
+  //console.log('Error loading plugin: ' + info.plugin);
+  //console.log(info.error.message);
   console.dir(info.error.stack.split('\n'));
   process.exit(1);
 }

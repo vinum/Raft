@@ -7,8 +7,8 @@ var net = require('net');
 
 var balancer = require('./balancer').balancer
 process.on('uncaughtException', function(err) {
-	console.log('Caught exception: ' + err);
-	console.log('Caught exception: ' + err.stack);
+	//console.log('Caught exception: ' + err);
+	//console.log('Caught exception: ' + err.stack);
 });
 process.on('message', function(msg) {
 	var cmd;
@@ -27,7 +27,7 @@ process.on('message', function(msg) {
 			process.send({
 				domains : balancer.domains
 			})
-			console.log(balancer.domains)
+			//console.log(balancer.domains)
 			for (var domain in balancer.domains) {
 				balancer.domains[domain].stats.requests = 0
 				balancer.domains[domain].stats.bytesRead = 0

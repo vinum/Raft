@@ -15,7 +15,7 @@ function authSocket(data, socket, callback) {
 			});
 
 			socket.on('error', function(err) {
-				console.log('error', err)
+				//console.log('error', err)
 			})
 			rpc.user = user
 			rpc.functions = raft.service.rpc[user.zone].functions;

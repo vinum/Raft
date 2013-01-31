@@ -3,5 +3,5 @@
  *
  */
 
-console.log('%j', process.argv);
+//console.log('%j', process.argv);
 process.exit(0);

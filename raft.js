@@ -20,7 +20,7 @@ var raft = module.exports = new EventEmitter2({
 //debugger
 //setup logger
 //
-raft.debug = console.log.bind(console.log)
+raft.debug = //console.log.bind(//console.log)
 //
 // Expose version through `pkginfo`.
 //
@@ -87,7 +87,7 @@ raft.balancer = require('./raft/common/balancer');
 //
 raft.Balancer = raft.balancer.Balancer;
 raft.on('*', function(data) {
-	console.log(data)
+	//console.log(data)
 })
 //
 //raft services

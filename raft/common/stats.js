@@ -58,7 +58,7 @@ Stats.prototype.timmer = function() {
 				self.emit('update')
 				setTimeout(function() {
 					self.timmer()
-				}, 10000)
+				}, 1000)
 			})
 		});
 	})

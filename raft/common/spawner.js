@@ -99,7 +99,7 @@ Spawner.prototype.trySpawn = function(app, callback) {
 			if (err) {
 				return callback(err);
 			}
-			console.log('dsfsdfsdfsdf')
+			//console.log('dsfsdfsdfsdf')
 			self.spawn(repo, callback);
 
 		})
@@ -115,7 +115,7 @@ Spawner.prototype.trySpawn = function(app, callback) {
 //
 Spawner.prototype.snapshot = function(repo, app, callback) {
 	var sha = crypto.createHash('sha1')
-	console.log(repo.appDir)
+	//console.log(repo.appDir)
 	var id = raft.common.uuid()
 	var tarPath = path.join(raft.directories.tmp, id)
 	var tar = new Packer({
@@ -125,7 +125,7 @@ Spawner.prototype.snapshot = function(repo, app, callback) {
 	})
 
 	function updateSha(chunk) {
-		console.log(chunk)
+		//console.log(chunk)
 		sha.update(chunk);
 	}
 
@@ -135,7 +135,7 @@ Spawner.prototype.snapshot = function(repo, app, callback) {
 			type : 'system',
 			message : 'Unable to unpack tarball'
 		};
-		console.log(err)
+		//console.log(err)
 		return callback(err);
 	}
 
@@ -153,7 +153,7 @@ Spawner.prototype.snapshot = function(repo, app, callback) {
 			if (err) {
 				return callback(err);
 			}
-			console.log(tarPath, path.join(repo._snapshotDir, app.user, hash + '.tar'))
+			//console.log(tarPath, path.join(repo._snapshotDir, app.user, hash + '.tar'))
 			if (!snapshot) {
 				fs.rename(tarPath, path.join(repo._snapshotDir, app.user, hash + '.tar'), function(err) {
 					if (err) {
@@ -193,7 +193,7 @@ Spawner.prototype.snapshot = function(repo, app, callback) {
 	}
 
 
-	console.log(tar)
+	//console.log(tar)
 	tar.on("error", onError).pipe(zlib.Gzip()).on("error", onError).on('data', updateSha).pipe(fstream.Writer({
 		type : "File",
 		path : tarPath
@@ -316,7 +316,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 			foreverOptions.options.push(script);
 			carapaceBin = foreverOptions.options.shift();
-			console.log(foreverOptions)
+			//console.log(foreverOptions)
 			var drone = new forever.Monitor(carapaceBin, foreverOptions);
 			drone.on('error', function() {
 				//
@@ -358,7 +358,7 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 			// (remark) this may not work if haibu starts two apps at the same time
 			//
 			function onError(err) {
-				console.log(err)
+				//console.log(err)
 				if (!responded) {
 					errState = true;
 					responded = true;

@@ -139,7 +139,7 @@ macros.assertParentSpawn = function (options, /*PORT, script, argv, cwd,*/ vows)
 function extendContext (context, vows) {
   if (vows) {
     if (vows.topic) {
-      console.log('Cannot include topic at top-level of nested vows:');
+      //console.log('Cannot include topic at top-level of nested vows:');
       eyes.inspect(vows, 'vows');
       process.exit(1);
     }

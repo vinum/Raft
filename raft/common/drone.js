@@ -35,7 +35,7 @@ var Drone = exports.Drone = function(options) {
 //
 Drone.prototype.start = function(oldApp, user, callback) {
 	var self = this;
-	console.log(oldApp)
+	//console.log(oldApp)
 	function save(app) {
 		self.spawner.trySpawn(app, function(err, result) {
 			if (err) {
@@ -599,7 +599,7 @@ Drone.prototype._update = function(record, existing, updated, callback) {
 // Formats the specified `record` based on the `record.socket`.
 //
 Drone.prototype._formatRecord = function(record, app) {
-	console.log(record, app)
+	//console.log(record, app)
 	var response = raft.common.clone(record.data);
 	//response.repository = null;
 	//delete response.spawnWith
