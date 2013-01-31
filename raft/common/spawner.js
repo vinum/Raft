@@ -272,9 +272,9 @@ Spawner.prototype.spawn = function spawn(repo, callback) {
 
 		var uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
-		var logFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
-		var outFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
-		var errFile = this.logsDir + '/' + meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
+		var logFile = self.logsDir + '/' + meta.user + '.' + meta.name + '.logFile.' + uid + '.log'
+		var outFile = self.logsDir + '/' + meta.user + '.' + meta.name + '.outFile.' + uid + '.log'
+		var errFile = self.logsDir + '/' + meta.user + '.' + meta.name + '.errFile.' + uid + '.log'
 
 		foreverOptions = {
 			fork : true,
