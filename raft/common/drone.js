@@ -294,8 +294,8 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 // Stops the potentially running application then removes all dependencies
 // and source files associated with the application.
 //
-Drone.prototype.getlogs = function(uid, name, user, callback) {
-	var length = HISTORY_LENGTH;
+Drone.prototype.getlogs = function(uid, name, user, limit, callback) {
+	var length = limit || HISTORY_LENGTH;
 	var outFile = this.logsDir + '/' + user + '.' + name + '.outFile.' + uid + '.log'
 	var errFile = this.logsDir + '/' + user + '.' + name + '.errFile.' + uid + '.log'
 
