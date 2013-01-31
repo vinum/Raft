@@ -63,7 +63,10 @@ var Balancer = exports.Balancer = function(options) {
 	this.domainsTmp = {
 		//Domain : app
 	};
-
+	var stats = this.stats = {};
+	stats.requests = 0;
+	stats.bytesRead = 0;
+	stats.bytesWritten = 0;
 };
 
 //
@@ -246,11 +249,17 @@ Balancer.prototype.destroyDrone = function(drone, app, callback) {
 Balancer.prototype.syncRequestsUpdate = function(msg) {
 	var domains = msg.domains
 	var selfDomains = this.domains
+	var self = this;
 	var domainKeys = Object.keys(domains)
 	domainKeys.forEach(function(domain) {
 		var sentDomain = domains[domain]
 		var selfDomain = selfDomains[domain]
 		for (var key in sentDomain.stats) {
+			self.stats[key] = self.stats[key] + sentDomain.stats[key]
+
+			self.stats.requests = self.stats.requests + sentDomain.stats[key].requests;
+			self.stats.bytesRead = self.stats.bytesRead + sentDomain.stats[key].bytesRead;
+			self.stats.bytesWritten = self.stats.bytesWritten + sentDomain.stats[key].bytesWritten;
 			selfDomain.stats[key] = selfDomain.stats[key] + sentDomain.stats[key]
 		}
 	})

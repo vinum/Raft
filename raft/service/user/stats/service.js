@@ -95,4 +95,11 @@ exports.run = function(rpc) {
 			stats : raft.balancer.balancer.domains[host] ? raft.balancer.balancer.domains[host] : null
 		})
 	})
+	rpc.expose('stats.proxy', function listHosts() {
+		var user = this.user
+		var exposed = this;
+		exposed.send({
+			stats : raft.balancer.balancer.stats
+		})
+	})
 };
