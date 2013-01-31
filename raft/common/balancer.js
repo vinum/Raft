@@ -380,7 +380,8 @@ exports.start = function(callback) {
 	exports.fork(function() {
 		exports.fork(function() {
 			callback()
-			setInterval(exports.sync, 1000)
+			exports.sync()
+			setInterval(exports.syncRequests, 1000)
 		})
 	})
 }
