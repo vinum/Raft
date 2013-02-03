@@ -103,13 +103,13 @@ exports.run = function(rpc) {
 	rpc.expose('package.scale.up', function(app) {
 		var user = this.user
 		var exposed = this;
-		var before = raft.drone.running(user.username).length
+		var before = raft.drone.show(app.name, user.username).length
 		raft.drone.start(app, user.username, function(err, result) {
 			if (err || !result) {
 				err = err || new Error('Unknown error from drone.');
 				return exposed.error(err);
 			}
-			var count = raft.drone.running(user.username).length
+			var count = raft.drone.show(app.name, user.username).length
 			exposed.send({
 				scale : before != count,
 				before : before,
