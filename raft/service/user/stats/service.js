@@ -37,7 +37,6 @@ exports.run = function(rpc) {
 			if (err) {
 				return exposed.error(err);
 			}
-			//console.log(data)
 			exposed.send({
 				load : data
 			});
@@ -52,14 +51,11 @@ exports.run = function(rpc) {
 			name : name
 		}
 		var query = raft.mongoose.Stats.find(by)
-
 		query.sort('-time').limit(limit || 10)
 		query.exec(function(err, data) {
 			if (err) {
 				return exposed.error(err);
 			}
-			//console.log(data)
-
 			exposed.send({
 				load : data
 			});
@@ -80,7 +76,6 @@ exports.run = function(rpc) {
 			if (err) {
 				return exposed.error(err);
 			}
-			//console.log(data)
 
 			exposed.send({
 				load : data
@@ -91,6 +86,7 @@ exports.run = function(rpc) {
 	rpc.expose('stats.proxy.host', function listHosts(host) {
 		var user = this.user
 		var exposed = this;
+
 		exposed.send({
 			stats : raft.balancer.balancer.domains[host] ? raft.balancer.balancer.domains[host] : null
 		})

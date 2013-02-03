@@ -43,25 +43,31 @@ Stats.prototype.timmer = function() {
 			return
 		}
 		self.data = loadData
-		exec('du -shk ' + self.meta.dir, function(error, stdout, stderr) {
-			self.data = loadData
-			self.data.disk = stdout.split('\t')[0]
-			new raft.mongoose.Stats({
-				pcpu : loadData.pcpu,
-				rssize : loadData.rssize,
-				vsz : loadData.vsz,
-				name : self.meta.name,
-				user : self.meta.user,
-				uid : self.meta.uid,
-				disk : stdout.split('\t')[0]
-			}).save(function() {
-				self.emit('update')
-				setTimeout(function() {
-					self.timmer()
-				}, raft.config.get('timmer:stats') || 1000)
-			})
-		});
+		
+		new raft.mongoose.Stats({
+			pcpu : loadData.pcpu,
+			rssize : loadData.rssize,
+			vsz : loadData.vsz,
+			name : self.meta.name,
+			user : self.meta.user,
+			uid : self.meta.uid
+		}).save(function() {
+			self.emit('update')
+			setTimeout(function() {
+				self.timmer()
+			}, raft.config.get('timmer:stats') || 1000)
+		})
 	})
+}
+Stats.prototype.get = function() {
+	return {
+		pcpu : Number(this.data.pcpu),
+		rssize : Number(this.data.rssize),
+		vsz : Number(this.data.vsz),
+		name : this.meta.name,
+		user : this.meta.user,
+		uid : this.meta.uid,
+	}
 }
 Stats.prototype.kill = function(callback) {
 	this.isKill = true

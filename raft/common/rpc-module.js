@@ -124,8 +124,9 @@ RpcModule.prototype.requestEvent = function(data, cb) {
 		var vow = this.runVows(data);
 		return this.handler(vow.handler, vow.exsosed, vow.params);
 	}
-	if (data.hasOwnProperty('error'))
-		throw data.error.message;
+	if (data.hasOwnProperty('error')) {
+		return console.log(data.error.message);
+	}
 
 	if (!data.hasOwnProperty('id'))
 		return cb(this.runError(32600, null));

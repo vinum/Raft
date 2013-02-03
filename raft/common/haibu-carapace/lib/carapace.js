@@ -7,7 +7,7 @@
  */
 
 var fs = require('fs'), util = require('util'), net = require('net'), path = require('path'), events = require('eventemitter2');
-var daemon = require('daemon')
+
 var carapace = module.exports = new events.EventEmitter2({
 	delimeter : '::',
 	wildcard : true
@@ -118,7 +118,6 @@ carapace.use = function(plugins, callback) {
 //
 carapace.run = function(override, callback) {
 	var error;
-
 	Array.prototype.slice.call(arguments).forEach(function(a) {
 		switch (typeof(a)) {
 			case 'function':
@@ -148,9 +147,8 @@ carapace.run = function(override, callback) {
 	// and it will be completely unaware of the carapace.
 	//
 	carapace.cli.rewrite(carapace.script, carapace.argv, override);
-
-	daemon.chroot(process.cwd());
-
+	require('daemon').chroot(process.cwd());
+	process.chdir('/');
 	//
 	// Clear the module cache so anything required by `haibu-carapace`
 	// is reloaded as necessary.
@@ -161,16 +159,24 @@ carapace.run = function(override, callback) {
 	// Setup `carapace.wrapped` contain information about
 	// the wrapped script, then
 	//
+
 	carapace.wrapped = {
 		script : carapace.script,
 		argv : carapace.argv
 	};
-
+	process.argv = ['node', '/' + carapace.script]
+	
+	
+	
+	
+	
+	
+	
 	process.nextTick(function() {
-
 		//
 		// Next tick to prevent a leak from arguments
 		//
+
 		require('module').Module.runMain();
 		carapace._module = process.mainModule;
 

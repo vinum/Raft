@@ -35,21 +35,19 @@ var Drone = exports.Drone = function(options) {
 //
 Drone.prototype.start = function(oldApp, user, callback) {
 	var self = this;
-	//console.log(oldApp)
+	var spawn = this.spawner.spawn()
+
 	function save(app) {
-		self.spawner.trySpawn(app, function(err, result) {
-			if (err) {
-				return callback(err, false);
-			} else if ( typeof result === 'undefined') {
-				var err = new Error('Unknown error from Spawner.');
-				err.blame = {
-					type : 'system',
-					message : 'Unknown'
-				}
-				return callback(err);
-			}
-			result.hash = app.hash
-			self._add(app, result, function(err, data) {
+
+		function onerror(err) {
+			spawn.removeListener('error', onerror)
+			spawn.removeListener('started', onstart)
+			return callback(err);
+		}
+
+		function onstart() {
+			spawn.removeListener('error', onerror)
+			self._add(app, spawn, function(err, data) {
 				//
 				// If there is an error persisting the drone
 				// to disk then just respond anyway since the
@@ -57,7 +55,13 @@ Drone.prototype.start = function(oldApp, user, callback) {
 				//
 				callback(null, data);
 			});
-		});
+		}
+
+
+		spawn.once('error', onerror)
+		spawn.on('started', onstart)
+		spawn.init(app, onerror)
+		spawn.trySpawn(onerror)
 	}
 
 
@@ -90,6 +94,77 @@ Drone.prototype.start = function(oldApp, user, callback) {
 			}
 		})
 	})
+};
+
+//
+// ### function stop (name, callback)
+// #### @name {string} Name of the application to stop (i.e. app.name).
+// #### @cleanup {bool} (optional) Remove all autostart files (default=true).
+// #### @callback {function} Continuation passed to respond to.
+// Stops all drones with app.name === name managed by this instance
+//
+Drone.prototype.stopOne = function(name, user, cleanup, callback) {
+	if ( typeof cleanup !== 'boolean') {
+		callback = cleanup;
+		cleanup = true;
+	}
+
+	if (!this.apps[user] || typeof this.apps[user][name] === 'undefined') {
+		return callback(new Error('Cannot stop application that is not running.'));
+	}
+
+	var self = this, app = this.apps[user][name], keys = Object.keys(app.drones), results = [];
+	keys = [keys[0]]
+	function removeAndSave(key, next) {
+		function onStop() {
+			app.drones[key].monitor.removeListener('error', onErr);
+			results.push(app.drones[key].process);
+			var pid = app.drones[key].pid
+			var uid = app.drones[key].data.uid
+			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			self._remove(app, user, app.drones[key], cleanup, function() {
+				raft.mongoose.Drone.remove({
+					pid : pid,
+					uid : uid
+				}, next)
+			});
+		}
+
+		function onErr(err) {
+			//
+			// Remark should we handle errors here
+			//
+			raft.emit(['drone', 'stop', 'error'], {
+				key : key,
+				message : err.message
+			});
+			app.drones[key].monitor.removeListener('stop', onStop);
+			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			raft.mongoose.Drone.remove({
+				pid : app.drones[key].pid,
+				uid : app.drones[key].uid
+			}, next)
+		}
+
+
+		app.drones[key].monitor.once('stop', onStop);
+		app.drones[key].monitor.once('error', onErr);
+
+		try {
+			app.drones[key].monitor.stop(true);
+		} catch (err) {
+			onErr(err);
+		}
+
+		raft.emit(['drone', 'stop', 'success'], {
+			key : key
+		});
+	}
+
+
+	async.forEach(keys, removeAndSave, function() {
+		callback(null, results);
+	});
 };
 
 //
@@ -192,9 +267,9 @@ Drone.prototype.restart = function(name, user, callback) {
 	var self = this, record = this.apps[user][name], keys = Object.keys(record.drones), processes = [];
 
 	function restartAndUpdate(key, next) {
-		var existing = record.drones[key].monitor.uid;
+		var existing = record.drones[key].uid;
 
-		record.drones[key].monitor.once('restart', function(_, data) {
+		record.drones[key].once('RUNNING', function(_, data) {
 			//
 			// When the `restart` event is raised, update the set of processes for this
 			// app which this `Drone` instance has restarted
@@ -203,7 +278,7 @@ Drone.prototype.restart = function(name, user, callback) {
 			next();
 		});
 
-		record.drones[key].monitor.restart();
+		record.drones[key].restart();
 	}
 
 
@@ -296,9 +371,9 @@ Drone.prototype.getEnv = function(key, name, user, callback) {
 //
 Drone.prototype.getlogs = function(uid, name, user, limit, callback) {
 	var length = limit || HISTORY_LENGTH;
-	var outFile = this.logsDir + '/' + user + '.' + name + '.outFile.' + uid + '.log'
-	var errFile = this.logsDir + '/' + user + '.' + name + '.errFile.' + uid + '.log'
-
+	var outFile = this.logsDir + '/' + user + '.' + name + '.out.' + uid + '.log'
+	var errFile = this.logsDir + '/' + user + '.' + name + '.err.' + uid + '.log'
+	var npmFile = this.logsDir + '/' + user + '.' + name + '.npm.' + uid + '.log'
 	function readLog(file, cb) {
 		var lines = []
 		var data = ''
@@ -342,10 +417,16 @@ Drone.prototype.getlogs = function(uid, name, user, limit, callback) {
 			if (err) {
 				return callback(err)
 			}
+			readLog(npmFile, function(err, npmlog) {
+				if (err) {
+					return callback(err)
+				}
 
-			callback(null, {
-				stdout : stdout,
-				stderr : stderr
+				callback(null, {
+					stdout : stdout,
+					stderr : stderr,
+					npmlog : npmlog
+				})
 			})
 		})
 	})
@@ -522,18 +603,8 @@ Drone.prototype._add = function(app, drone, callback) {
 		record.app.versionCode = app.versionCode
 	}
 
-	var uid = drone.data.uid;
+	var uid = drone.uid;
 	record.drones[uid] = drone;
-
-	//
-	// In the event that the drone unexpectedly restarts,
-	// we need to update the record with the new uid so that
-	// we can control it later on.
-	//
-	drone.monitor.on('restart', function(_, data) {
-		self._update(record, uid, data);
-		uid = data.uid;
-	});
 
 	var data = self._formatRecord(drone)
 
@@ -558,7 +629,7 @@ Drone.prototype._remove = function(record, user, drone, cleanup, callback) {
 		callback = cleanup;
 		cleanup = true;
 	}
-	delete record.drones[drone.monitor.uid];
+	delete record.drones[drone.uid];
 
 	//
 	// If there are no more drones for this app
@@ -598,26 +669,26 @@ Drone.prototype._update = function(record, existing, updated, callback) {
 // #### @record {Object} Record to format.
 // Formats the specified `record` based on the `record.socket`.
 //
-Drone.prototype._formatRecord = function(record, app) {
-	//console.log(record, app)
-	var response = raft.common.clone(record.data);
+Drone.prototype._formatRecord = function(drone, app) {
+	var response = {};
 	//response.repository = null;
 	//delete response.spawnWith
-	if (record.socket && record.socket.port) {
-		response.port = record.socket.port;
-		response.host = record.socket.host;
-		response.hash = record.hash;
+	if (drone.socket && drone.socket.port) {
+		response.port = drone.socket.port;
+		response.host = drone.socket.host;
 	}
 
-	response.host = response.host || this.host || 'localhost';
-	response.stats = record.stats.data;
-	response.stdout = record.stdout;
-	response.stderr = record.stderr;
+	response.stats = drone.stats.data;
+	response.stdout = drone.stdout;
+	response.stderr = drone.stderr;
+	response.npmput = drone.npmput;
 
-	if (app) {
-		response.name = app.name;
-		response.user = app.user;
-	}
+	response.uid = drone.uid;
+	response.ctime = drone.data.ctime;
+	response.status = drone._stages[drone._stage]
+
+	response.name = drone.app.name;
+	response.user = drone.app.user;
 
 	return response;
 };
@@ -640,6 +711,9 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 	app.name = oldApp.name
 	app.repository = oldApp.repository
 	app.scripts = oldApp.scripts
+	if (oldApp.engines || oldApp.engine) {
+		app.engines = (oldApp.engines || oldApp.engine)
+	}
 	app.domain = oldApp.domain ? oldApp.domain : app.name + '.' + user + '.' + raft.config.get('domain')
 	if (oldApp.subdomain) {
 		//app.domain = app.subdomain + '.' + raft.config.get('domain')

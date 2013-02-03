@@ -6,10 +6,7 @@ var path = require('path');
 var net = require('net');
 
 var balancer = require('./balancer').balancer
-process.on('uncaughtException', function(err) {
-	//console.log('Caught exception: ' + err);
-	//console.log('Caught exception: ' + err.stack);
-});
+
 process.on('message', function(msg) {
 	var cmd;
 	if ( cmd = msg.cmd) {
@@ -23,20 +20,30 @@ process.on('message', function(msg) {
 			balancer.destroyDrone(msg.drone, msg.app)
 		} else if (cmd === 'sync') {
 			balancer.domains = msg.domains
-		} else if (cmd === 'syncRequests') {
-			process.send({
-				domains : balancer.domains
-			})
-			//console.log(balancer.domains)
-			for (var domain in balancer.domains) {
-				balancer.domains[domain].stats.requests = 0
-				balancer.domains[domain].stats.bytesRead = 0
-				balancer.domains[domain].stats.bytesWritten = 0
-			}
+
 		}
+
 	}
 });
+setInterval(function() {
+	var domains = {}
+	for (var domain in balancer.domains) {
 
+		domains[domain] = {
+			stats : {
+				requests : Number(balancer.domains[domain].stats.requests),
+				bytesRead : Number(balancer.domains[domain].stats.bytesRead),
+				bytesWritten : Number(balancer.domains[domain].stats.bytesWritten)
+			}
+		}
+		balancer.domains[domain].stats.bytesRead = 0
+		balancer.domains[domain].stats.bytesWritten = 0
+		balancer.domains[domain].stats.requests = 0
+	}
+	process.send({
+		domains : domains
+	})
+}, 2000)
 var server = bouncy(balancer.handle.bind(balancer))
 server.on('listen', function() {
 

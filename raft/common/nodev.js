@@ -3,6 +3,7 @@ var path = require('path')
 var semver = require('semver')
 var http = require('http')
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec
 
 var Nodev = exports.Nodev = function(options) {
 	options = options || {};
@@ -14,10 +15,7 @@ var Nodev = exports.Nodev = function(options) {
 Nodev.prototype.getInstalled = function(callback) {
 	fs.readdir(this.install_dir, function(err, files) {
 		if (err)
-			return callback({
-				message : 'Error listing installed Node versions',
-				error : err
-			});
+			return callback(err)
 
 		return callback(null, files);
 	});
@@ -31,9 +29,7 @@ Nodev.prototype.isInstalled = function(version, callback) {
 		var best_version = semver.maxSatisfying(node_versions, version);
 
 		if (!best_version)
-			return callback({
-				message : 'Node ' + version + ' is not installed'
-			});
+			return callback(new Error('Node ' + version + ' is not installed'))
 
 		return callback(null, best_version);
 	});
@@ -52,7 +48,8 @@ Nodev.prototype.getAvailable = function(callback) {
 			});
 			result.on('end', function() {
 				//extracting node versions from returned html
-				var regex = /<a href="v(.*?)\/">/gi, match, available_node_versions = [];
+				var regex = /<a href="v(.*?)\/">/gi
+				var regex = /<a href="node-(.*?)\/">/gi, match, available_node_versions = [];
 
 				while ( match = regex.exec(data)) {
 					available_node_versions.push(match[1]);
@@ -61,9 +58,7 @@ Nodev.prototype.getAvailable = function(callback) {
 				return callback(null, available_node_versions);
 			});
 		} else {
-			return callback({
-				message : 'Could not connect to nodejs.org'
-			});
+			return callback(new Error('Could not connect to nodejs.org'))
 		}
 	});
 };
@@ -76,9 +71,7 @@ Nodev.prototype.isAvailable = function(version, callback) {
 		var best_version = semver.maxSatisfying(node_versions, version);
 
 		if (!best_version)
-			return callback({
-				message : 'No matching version available for ' + version
-			});
+			return callback(new Error('No matching version available for ' + version));
 
 		return callback(null, best_version);
 	});
@@ -89,11 +82,7 @@ Nodev.prototype.mkdir = function(version, callback) {
 
 	spawn('mkdir', [dir]).on('exit', function(code) {
 		if (code > 0)
-			return callback({
-				message : 'Could not create directory',
-				path : dir,
-				code : code
-			});
+			return callback(new Error('Could not create directory'));
 
 		return callback(null);
 	});
@@ -104,10 +93,7 @@ Nodev.prototype.downloadPackage = function(version, callback) {
 
 	spawn('wget', ['-O', tmp_file, link]).on('exit', function(code) {
 		if (code > 0)
-			return callback({
-				message : 'Error downloading ' + link,
-				code : code
-			});
+			return callback(new Error('Error downloading ' + lin));
 
 		return callback(null, tmp_file);
 	});
@@ -116,10 +102,7 @@ Nodev.prototype.downloadPackage = function(version, callback) {
 Nodev.prototype.extractPackage = function(file, destination, callback) {
 	spawn('tar', ['--strip-components=1', '-xzf', file, '-C', destination]).on('exit', function(code) {
 		if (code > 0)
-			return callback({
-				message : 'Failed to extract Node package',
-				code : code
-			});
+			return callback(new Error('Failed to extract Node package'));
 
 		return callback(null);
 	});
@@ -130,10 +113,7 @@ Nodev.prototype.configure = function(node_dir, callback) {
 		cwd : node_dir
 	}).on('exit', function(code) {
 		if (code)
-			return callback({
-				message : 'Failed to configure Node build',
-				code : code
-			});
+			return callback(new Error('Failed to configure Node build'));
 
 		return callback(null);
 	});
@@ -144,13 +124,26 @@ Nodev.prototype.make = function(node_dir, callback) {
 		cwd : node_dir
 	}).on('exit', function(code) {
 		if (code > 0)
-			return callback({
-				message : 'Failed to make Node build',
-				code : 0
-			});
+			return callback(new Error('Failed to make Node build'));
 
 		return callback(null);
 	});
+};
+
+Nodev.prototype.installDeps = function(node_dir, callback) {
+	console.log(node_dir + '/bin/npm install daemon')
+	exec(node_dir + '/bin/npm install daemon', function(error, stdout, stderr) {
+
+		console.log('stdout: ' + stdout);
+		console.log('stderr: ' + stderr);
+		if (error !== null) {
+			return callback(new Error('Failed to install daemon'));
+		}
+		return callback(null);
+	}, {
+		cwd : node_dir + '/lib'
+	});
+
 };
 
 Nodev.prototype.install = function(node_dir, callback) {
@@ -158,18 +151,16 @@ Nodev.prototype.install = function(node_dir, callback) {
 		cwd : node_dir
 	}).on('exit', function(code) {
 		if (code > 0)
-			return callback({
-				message : 'Failed to install Node build',
-				code : code
-			});
+			return callback(new Error('Failed to install Node build'));
 
 		return callback(null);
+
 	});
 };
 
 Nodev.prototype.checkInstall = function(version, callback) {
 	var self = this;
-
+	return callback(null, version);
 	console.log('Nodev:', 'finding install for Node ' + version);
 	self.isInstalled(version, function(err, version_match) {
 		if (version_match) {
@@ -206,14 +197,21 @@ Nodev.prototype.checkInstall = function(version, callback) {
 													self.make(destination, function(err) {
 														if (err) {
 															callback(err);
-														} else {
-															console.log('Nodev:', 'installing ' + destination);
+														} else { installDeps
 															self.install(destination, function(err) {
 																if (err) {
 																	callback(err);
 																} else {
-																	console.log('Nodev:', 'Node ' + version_match + ' was successfully installed');
-																	callback(null, version_match);
+																	self.installDeps(destination, function(err) {
+																		if (err) {
+																			callback(err);
+																		} else {
+																			console.log('Nodev:', 'installDeps ' + destination);
+																			console.log('Nodev:', 'Node ' + version_match + ' was successfully installed');
+																			callback(null, version_match);
+
+																		}
+																	});
 																}
 															});
 														}

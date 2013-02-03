@@ -16,6 +16,7 @@ var events = require('events')
 var qs = require('querystring')
 var ejs = require('ejs');
 var raft = require('../../raft');
+var Stats = require('./stats')
 
 var async = raft.common.async;
 var server = raft.common.server;
@@ -44,7 +45,9 @@ var matchers = {
 	app : /^([\w|\-]+)\.package\.json/,
 	pid : /^([\w|\-]+)\.(\d+)\.json/
 };
-exports.cluster = cluster
+exports.__defineGetter__("cluster", function() {
+	return cluster
+});
 //
 // ### function Balancer (options)
 // #### @options {Object} Options for this instance.
@@ -82,7 +85,7 @@ util.inherits(Balancer, events.EventEmitter);
 // Attempts to proxy the incoming request to the specified application
 // by using the `req.headers.host` property.
 //
-Balancer.prototype.handle = function(req, bounce) {
+Balancer.prototype.handle = function(req, res, bounce) {
 	var self = this
 
 	if (!req.headers.host) {
@@ -98,12 +101,12 @@ Balancer.prototype.handle = function(req, bounce) {
 	var drone;
 
 	if (!app)
-		return this.serveText(req, bounce, {
+		return this.serveText(req, res, bounce, {
 			code : 404,
 			message : 'App not found for domain: ' + domain
 		});
 	if (!app.drones.length)
-		return this.serveText(req, bounce, {
+		return this.serveText(req, res, bounce, {
 			code : 404,
 			message : 'Drone not found for : ' + domain
 		});
@@ -115,17 +118,22 @@ Balancer.prototype.handle = function(req, bounce) {
 		port : drone.port,
 		host : drone.host
 	}).on('error', function(err) {
-		return self.serveText(req, bounce, {
+		return self.serveText(req, res, bounce, {
 			code : 502,
 			message : err.message
 		});
 	})
 
-	socket.on('end', function() {
-		app.update(socket.bytesRead || 0, socket.bytesWritten || 0)
+	socket.on('close', function() {
+		var stats = app.stats;
+		stats.requests = stats.requests + 1;
+		stats.bytesRead = stats.bytesRead + socket.bytesRead;
+		stats.bytesWritten = stats.bytesWritten + socket.bytesWritten;
+
 	});
 
 	bounce(socket);
+	socket.resume()
 };
 
 //
@@ -135,9 +143,8 @@ Balancer.prototype.handle = function(req, bounce) {
 // Writes `data.message` to the outgoing `res` along with any
 // metadata passed as `data.meta`.
 //
-Balancer.prototype.serveText = function(req, bounce, data) {
+Balancer.prototype.serveText = function(req, res, bounce, data) {
 	var text = data.message, diff = Date.now() - req.ptime;
-	var res = bounce.respond();
 	if (data.meta) {
 		text = [message, qs.unescape(qs.stringify(data.meta, ', '))].join(' | ');
 	}
@@ -256,9 +263,7 @@ Balancer.prototype.syncRequestsUpdate = function(msg) {
 		var sentDomain = domains[domain]
 		var selfDomain = selfDomains[domain]
 		for (var key in sentDomain.stats) {
-
 			self.stats[key] = self.stats[key] + sentDomain.stats[key];
-
 			selfDomain.stats[key] = selfDomain.stats[key] + sentDomain.stats[key]
 		}
 	})
@@ -362,7 +367,31 @@ exports.sync = function() {
 }
 exports.fork = function(callback) {
 	var worker = cluster.fork().on('message', exports.balancer.syncRequestsUpdate.bind(exports.balancer));
-	callback()
+
+	worker.once('listening', callback)
+	worker.once('listening', function() {
+		worker.stats = new Stats({
+			name : 'process-load-proxy',
+			user : raft.config.get('system:username'),
+			pid : worker.process.pid,
+			uid : worker.id,
+			dir : worker.id
+		})
+		worker.once('exit', function(code, signal) {
+			worker.stats.kill()
+		})
+		exports.sync()
+	});
+}
+exports.killOne = function(callback) {
+	var id = Object.keys(cluster.workers)[0]
+
+	if (!id) {
+		return callback()
+	}
+
+	cluster.workers[id].disconnect()
+	cluster.workers[id].once('disconnect', callback);
 }
 //
 // ### function start (options, callback)
@@ -379,19 +408,11 @@ exports.start = function(callback) {
 		args : raft.config.get('proxy:port') ? [raft.config.get('proxy:port')] : ['8000'],
 		silent : raft.config.get('proxy:silent') || false
 	})
-	cluster.on('exit', function(worker, code, signal) {
-		exports.fork(function() {
 
-		})
-	});
+	exports.fork(callback)
+	exports.sync()
+	setInterval(exports.syncRequests, raft.config.get('timmer:proxy') || 1000)
 
-	exports.fork(function() {
-		exports.fork(function() {
-			callback()
-			exports.sync()
-			setInterval(exports.syncRequests, raft.config.get('timmer:proxy') || 1000)
-		})
-	})
 }
 //
 // ### function stop (callback)

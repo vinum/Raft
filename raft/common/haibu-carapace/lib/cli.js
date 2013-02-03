@@ -69,23 +69,11 @@ exports.rewrite = function (script, argv, override) {
     // If it is not a relative or absolute path, make it absolute
     // from the current `process.cwd()`.
     //
-    script = path.join('/', script);
+  //  script = path.join('/', argv[0].replace(process.cwd(),''));
   }
-
- // script = fs.realpathSync(require.resolve(script));
-  var insert = [script.replace(process.cwd(),'')].concat(argv);
-
-  //
-  // Remove all arguments that would be overwritten by
-  // the new [script, argv]
-  //
-  if (!override) {
-    process.argv.splice(1, insert.length);
-    process.argv.splice.apply(process.argv, [1, -1].concat(insert));
-    return;
-  }
-
-  process.argv = [process.argv[0]].concat(insert);
+  script = path.join('/', argv[0]);
+  process.execPath='/node'
+ 
 };
 
 exports.argv = function (argv) {

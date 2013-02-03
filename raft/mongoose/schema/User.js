@@ -97,6 +97,17 @@ UserSchema.methods.comparePassword = function(candidatePassword, cb) {
 		cb(null, isMatch);
 	});
 };
+var rpcs = {}
+UserSchema.methods.setRpc = function(rpc) {
+	console.log('setRpc')
+	rpcs[this.username] ? null : rpcs[this.username] = {}
+	rpcs[this.username][rpc.id] = rpc
+};
+
+UserSchema.methods.removeRpc = function(rpc) {
+	console.log('removeRpc')
+	delete rpcs[this.username][rpc.id]
+};
 
 UserSchema.methods.incLoginAttempts = function(cb) {
 	// if we have a previous lock that has expired, restart at 1
@@ -133,6 +144,18 @@ var reasons = UserSchema.statics.failedLogin = {
 	NOT_FOUND : 0,
 	PASSWORD_INCORRECT : 1,
 	MAX_ATTEMPTS : 2
+};
+
+UserSchema.statics.rpc = function(username) {
+	return {
+		invoke : function(method, params, cb) {
+			Object.keys(rpcs).forEach(function(user) {
+				Object.keys(rpcs[user]).forEach(function(id) {
+					rpcs[user][id].invoke(method, params, cb)
+				})
+			})
+		}
+	}
 };
 
 UserSchema.statics.getAuthenticated = function(username, password, cb) {
@@ -208,11 +231,16 @@ UserSchema.statics.testBucketKey = function(bucketKey, cb) {
 }
 module.exports = mongoose.model('User', UserSchema);
 
-module.exports.remove({}, function() {
+module.exports.findOne({
+
+}, function(err, user) {
+	if (user) {
+		return;
+	}
 	new module.exports({
-		username : 'bob',
+		username : raft.config.get('system:username'),
 		zone : 'user',
-		password : 'password'
+		password : raft.config.get('system:password')
 	}).save(function() {
 		module.exports.find({}, function(err, users) {
 			//console.log(users)

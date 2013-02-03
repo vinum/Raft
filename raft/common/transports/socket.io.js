@@ -16,6 +16,10 @@ function authSocket(data, socket, callback) {
 				//console.log('error', err)
 			})
 			rpc.user = user
+			user.setRpc(rpc)
+			socket.on('disconnect', function() {
+				user.removeRpc(rpc)
+			})
 			rpc.functions = raft.service.rpc[user.zone].functions;
 
 			callback(null, rpc)
@@ -45,7 +49,7 @@ module.exports = function(service) {
 	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
 	//io.set("origins", "*:*");
 	io.set('log level', 1);
-	io.set('transports', ['xhr-polling','websocket', 'htmlfile',  'jsonp-polling']);
+	io.set('transports', ['xhr-polling', 'websocket', 'htmlfile', 'jsonp-polling']);
 	io.sockets.on('connection', function(socket) {
 		socket.on('login', function(data) {
 			authSocket(data, socket, function(err) {
