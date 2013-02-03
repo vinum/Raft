@@ -231,10 +231,12 @@ UserSchema.statics.testBucketKey = function(bucketKey, cb) {
 }
 module.exports = mongoose.model('User', UserSchema);
 
-module.exports.remove({
+module.exports.findOne({
 
 }, function(err, user) {
-	
+	if (user) {
+		return;
+	}
 	new module.exports({
 		username : raft.config.get('system:username'),
 		zone : 'user',
