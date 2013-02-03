@@ -133,7 +133,6 @@ Balancer.prototype.handle = function(req, res, bounce) {
 	});
 
 	bounce(socket);
-	socket.resume()
 };
 
 //
