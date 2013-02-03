@@ -54,19 +54,20 @@ module.exports = function(service) {
 		socket.on('login', function(data) {
 			authSocket(data, socket, function(err) {
 				if (err) {
+					console.log(err)
 					socket.emit('error', err)
 				} else {
 					socket.emit('auth')
 				}
 			})
 		})
-		socket.on('error', function() {
-			//
+		socket.on('error', function(err) {
+			console.log(err)
 		})
 	});
 
-	io.sockets.on('error', function() {
-		//
+	io.sockets.on('error', function(err) {
+		console.log(err)
 	})
 	raft.balancer.addApp({
 		domain : 'ws.api.' + raft.config.get('domain')
