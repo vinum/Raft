@@ -8,6 +8,7 @@
 var fs = require('fs');
 var path = require('path');
 var raft = require('../../raft')
+var mixin = raft.common.mixin
 var async = raft.common.async;
 
 var LOG_LINEBREAK = "\n";
@@ -706,6 +707,9 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 	if (validateError) {
 		return callback(validateError)
 	}
+
+	mixin(app, oldApp);
+
 	app.user = user
 	app.nameClean = raft.common.sanitizeAppname(oldApp.name)
 	app.name = oldApp.name
