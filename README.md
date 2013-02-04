@@ -33,6 +33,14 @@ Raft features
    * Create, Remove, Update
 
 
+
+##Install
+To install just git clone.
+
+	git clone https://github.com/MangoRaft/Raft.git
+	cd Raft
+
+
 # CONFIG
 
 Basic config setup. Create a file called config.json in the config folder
@@ -102,8 +110,8 @@ if you want `https` you can generate the `privatekey.pem` and `certificate.csr` 
 To install Raft just do the normal `npm install`
 
 ##Run The Program
-	node raft
-
+	sudo node raft
+Note: Needs sudo for the chrroting of the apps.
 
 ##Communication Channels
 Raft has been build to run on any communication transports `http, tcp, websocket` Raft uses a common JSON RPC v1 that lays ontop of what ever transports avalible. 
