@@ -116,6 +116,10 @@ if (raft.balancer.cluster) {
 				raft.debug('boot', 'Raft mongoose has boot.')
 				raft.bucket.start(function() {
 					raft.debug('boot', 'Raft bucket has boot.')
+					process.on('uncaughtException', function(err) {
+						console.log('Caught exception: ' + err);
+						console.log('Caught exception: ' + err.stack);
+					});
 				})
 			})
 		})
