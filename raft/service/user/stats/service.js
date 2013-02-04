@@ -70,7 +70,7 @@ exports.run = function(rpc) {
 		}
 
 		var query = raft.mongoose.Stats.find(by)
-		query.sort('-name')
+		query.sort('-time').limit(limit || 10)
 
 		query.exec(function(err, data) {
 			if (err) {
