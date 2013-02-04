@@ -104,6 +104,11 @@ exports.run = function(rpc) {
 		var user = this.user
 		var exposed = this;
 		var before = raft.drone.show(app.name, user.username).length
+		if (!before) {
+			before = 0
+		} else {
+			before = before.length
+		}
 		raft.drone.start(app, user.username, function(err, result) {
 			if (err || !result) {
 				err = err || new Error('Unknown error from drone.');
