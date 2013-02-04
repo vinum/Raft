@@ -709,7 +709,7 @@ Drone.prototype._cleanPackage = function(oldApp, user, callback) {
 	}
 
 	mixin(app, oldApp);
-
+	delete app._id
 	app.user = user
 	app.nameClean = raft.common.sanitizeAppname(oldApp.name)
 	app.name = oldApp.name

@@ -43,7 +43,7 @@ Stats.prototype.timmer = function() {
 			return
 		}
 		self.data = loadData
-		
+
 		new raft.mongoose.Stats({
 			pcpu : loadData.pcpu,
 			rssize : loadData.rssize,
@@ -55,7 +55,7 @@ Stats.prototype.timmer = function() {
 			self.emit('update')
 			setTimeout(function() {
 				self.timmer()
-			}, raft.config.get('timmer:stats') || 1000)
+			}, raft.config.get('timmer:stats') || 5000)
 		})
 	})
 }
