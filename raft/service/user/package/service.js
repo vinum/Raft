@@ -103,7 +103,7 @@ exports.run = function(rpc) {
 	rpc.expose('package.scale.up', function(app) {
 		var user = this.user
 		var exposed = this;
-		var before = raft.drone.show(app.name, user.username).length
+		var before = raft.drone.show(app.name, user.username)
 		if (!before) {
 			before = 0
 		} else {
