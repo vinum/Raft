@@ -5,9 +5,34 @@
 	 |____|_  /\____|__  /\___  /     |____|   
 	        \/         \/     \/               
 	        
-# MAIN
+# MAIN [MangoRaft](http://mangoraft.com/)
 
-[MangoRaft](http://mangoraft.com/)
+Raft is a PaaS for node. Raft supports a wide range of functions to run multi-user, multi-app, mulit-infa. A lot of inspiration has come from the great people at nodejitu and haibu.
+
+Raft features
+
+ * App spawn-er
+   * dependency support with npm
+   * File-system chroot
+   * scalble apps
+   * methods start, stop, restart
+   * viewing app logs, npm logs and more.
+   * App load and memory usage
+   * multi versions of node 0.6.x+
+
+ * Mulit transport RPC
+   * nssocket
+   * socket.io
+   * More to come
+
+ * Proxy/Balancer
+   * Scalable
+   * Request stats
+   * Bandwidth stats
+   * Per app bandwidth stats
+   * Per app request stats
+ * User Accounts
+   * Create, Remove, Update
 
 
 # CONFIG
