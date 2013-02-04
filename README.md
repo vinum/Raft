@@ -19,12 +19,10 @@ Raft features
    * viewing app logs, npm logs and more.
    * App load and memory usage
    * multi versions of node 0.6.x+
-
  * Mulit transport RPC
    * nssocket
    * socket.io
    * More to come
-
  * Proxy/Balancer
    * Scalable
    * Request stats
@@ -41,23 +39,23 @@ Basic config setup. Create a file called config.json in the config folder
 
 	{
 		"proxy": {
-			"port": 8000
+			"port": 8000// port that the proxy should listen on. Port 80 is what you want
 		},
 		"timmer": {
-			"stats": 2500,
-			"proxy": 2500
+			"stats": 2500,//update process load and memory
+			"proxy": 2500//update proxy bandwidth and requests
 		},
 		"system": {
-			"username": "system-suer",
+			"username": "system-suer",//system/admin user account.
 			"password": "password",
 			"email": "system-noreply@gmail.com"
 		},
-		"bucket": {
+		"bucket": {//This will be remove over time.
 			"port": 9003,
 			"directory": "/path/to/files"
 		},
 		"db": {
-			"mongodb": {
+			"mongodb": {//mongodb config. Still need to ad auth support
 				"host": "localhost",
 				"port": 27017,
 				"path": "/data/db"
@@ -65,29 +63,29 @@ Basic config setup. Create a file called config.json in the config folder
 		},
 		"transports": {
 			"http": {
-				"load": false,
+				"load": false,//true will run/ false will not
 				"port": 9000,
 				"host": "localhost"
 			},
 			"socket.io": {
 				"load": true,
-				"port": 9004,
+				"port": 9004,//the port you want to listen on. Could be port 0
 				"host": "localhost"
 			},
 			"nssocket": {
 				"load": true,
 				"port": 9002,
-				"host": "localhost"
+				"host": "localhost"//hostname of the server. Does now get used.
 			}
 		},
-		"mail": {
+		"mail": {//so confirm users emails
 			"service": "Gmail",
 			"auth": {
 				"user": "noreply@gmail.com",
 				"pass": "password"
 			}
 		},
-		"domain": "mydomain.com"
+		"domain": "mydomain.com"//the root domain
 	}
 
 ##Balancer setup
@@ -116,7 +114,8 @@ This would be a basic rpc request to list all avalible methods on the server.
 		"params": [],
 		"method": "list"
 	}
-and the result would be
+	
+The result would be
 
 	{
 		"list": "function",
@@ -165,3 +164,23 @@ and the result would be
 	}
 	
 
+##LICENSE
+	Copyright (c) 2011-2013 MangoRaft.
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
