@@ -85,7 +85,7 @@ util.inherits(Balancer, events.EventEmitter);
 // Attempts to proxy the incoming request to the specified application
 // by using the `req.headers.host` property.
 //
-Balancer.prototype.handle = function(req, res, bounce) {
+Balancer.prototype.handle = function(req, bounce) {
 	var self = this
 
 	if (!req.headers.host) {
