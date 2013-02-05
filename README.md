@@ -7,18 +7,19 @@
 	        
 # MAIN [MangoRaft](http://mangoraft.com/)
 
-Raft is a PaaS for node. Raft supports a wide range of functions to run multi-user, multi-app, mulit-infa. A lot of inspiration has come from the great people at nodejitu and haibu.
+Raft is a PaaS for node. Raft supports a wide range of functions to run multi-user, multi-app, mulit-infa. 
+A lot of inspiration has come from the great people at nodejitu, nodester and AppFog.
 
 Raft features
 
  * App spawn-er
-   * dependency support with npm
-   * File-system chroot
-   * scalble apps
-   * methods start, stop, restart
-   * viewing app logs, npm logs and more.
+   * Dependency support with npm
+   * File-system `chroot`
+   * Scalble
+   * Methods start, stop, restart
+   * Viewing `app` logs, `npm` logs and more.
    * App load and memory usage
-   * multi versions of node 0.6.x+
+   * Multi versions of `node` 0.6.x`+`
  * Mulit transport RPC
    * nssocket
    * socket.io
@@ -27,10 +28,10 @@ Raft features
    * Scalable
    * Request stats
    * Bandwidth stats
-   * Per app bandwidth stats
-   * Per app request stats
+   * Per app `bandwidth` stats
+   * Per app `request` stats
  * User Accounts
-   * Create, Remove, Update
+   * `Create`, `Remove`, `Update`
 
 
 
@@ -175,7 +176,186 @@ The result would be
 		}
 	}
 
-	
+
+
+
+#RPC Methods
+
+Package we will use
+	var package = {
+	    repository: { type: 'git', url: 'https://github.com/FLYBYME/node-tracker.git' },
+	    name: 'node-bittorrent-tracker',
+	    license: 'BSD',
+	    domain: '192.168.1.101',
+	    scripts: { start: 'lib/tracker.js' },
+	    description: 'Run node example.js to start the tracker.',
+	    main: 'lib/tracker.js',
+	    author: '',
+	    version: '0.0.0'
+	}
+
+##package.start
+
+###Request
+	{
+		"id": "uuid",
+		"params": [package],
+		"method": "user.package.start"
+	}
+###Result
+	{
+	    drone: {
+	        port: 8080,
+	        uid: 'c50a89a9',
+	        stdout: [],
+	        npmput: '',
+	        name: 'node-bittorrent-tracker',
+	        stderr: [],
+	        status: 'RUNNING',
+	        ctime: 1360023226252,
+	        user: 'bob',
+	        host: '192.168.1.101',
+	        stats: {
+	            pcpu: '0.0',
+	            time: '00:00:00',
+	            etime: '00:00',
+	            vsz: '34020',
+	            user: 'root',
+	            rssize: '6088',
+	            comm: 'node'
+	        }
+	    }
+	}
+
+##package.get
+
+###Request
+	{
+		"id": "uuid",
+		"params": [],
+		"method": "user.package.running"
+	}
+###Result
+	{
+	    running: [
+	        {
+	            port: 8080,
+	            host2: '192.168.1.101',
+	            raftPort: 8080,
+	            uid: 'c50a89a9',
+	            name: 'node-bittorrent-tracker',
+	            domain: '192.168.1.101',
+	            version: '0.0.0',
+	            ctime: 1360023226252,
+	            user: 'bob',
+	            host: '192.168.1.101'
+	        }
+	    ]
+	}
+
+##package.get
+
+###Request
+	{
+		"id": "uuid",
+		"params": [{ name : package.name }],
+		"method": "user.package.get"
+	}
+###Result
+	{
+	    app: {
+	        version: '0.0.0',
+	        license: 'BSD',
+	        author: '',
+	        dependencies: {},
+	        main: 'lib/tracker.js',
+	        scripts: { start: 'lib/tracker.js' },
+	        nameClean: 'node-bittorrent-tracker-27e3d8ff73e3d45f657015f4431bda3ea1214e8f',
+	        _id: 'node-bittorrent-tracker',
+	        name: 'node-bittorrent-tracker',
+	        user: 'bob',
+	        versionCode: 1,
+	        directories: { home: 'node-tracker' },
+	        description: 'Run node example.js to start the tracker.',
+	        domain: '192.168.1.101'
+	    },
+	    drones: [
+	        {
+	            port: 8080,
+	            uid: 'c50a89a9',
+	            stdout: [],
+	            npmput: '',
+	            name: 'node-bittorrent-tracker',
+	            stderr: [],
+	            status: 'RUNNING',
+	            ctime: 1360023226252,
+	            user: 'bob',
+	            host: '192.168.1.101',
+	            stats: {
+	                pcpu: '0.0',
+	                time: '00:00:00',
+	                etime: '07:15',
+	                vsz: '39016',
+	                user: 'root',
+	                rssize: '8540',
+	                comm: 'node'
+	            }
+	        }
+	    ]
+	}
+
+
+##package.clean
+
+###Request
+	{
+		"id": "uuid",
+		"params": [{ name : package.name }],
+		"method": "user.package.clean"
+	}
+###Result
+	{ clean: true }
+
+
+
+##scale.package.count
+
+###Request
+	{
+		"id": "uuid",
+		"params": [{ name : package.name }],
+		"method": "scale.package.count"
+	}
+###Result
+	{ count : 1 }
+
+
+##scale.package.up
+
+###Request
+	{
+		"id": "uuid",
+		"params": [ package ],
+		"method": "scale.package.up"
+	}
+###Result
+	{ scale: true, before: 1, count: 2 }
+
+
+##scale.package.down
+
+###Request
+	{
+		"id": "uuid",
+		"params": [ package ],
+		"method": "scale.package.down"
+	}
+###Result
+	{ scale: true, before: 2, count: 1 }
+
+
+
+
 
 ##LICENSE
 	Copyright (c) 2011-2013 MangoRaft.
