@@ -23,7 +23,11 @@ var UserSchema = new Schema({
 	zone : {
 		type : String,
 		required : true,
-		'default' : 'free'
+		'default' : 'user'
+	},
+	email : {
+		type : String,
+		required : true
 	},
 	bucketKey : {
 		type : String,
@@ -35,10 +39,19 @@ var UserSchema = new Schema({
 		required : true,
 		'default' : 1
 	},
+	privileges : [{
+		type : String,
+		required : true
+	}],
 	confirmed : {
 		type : Boolean,
 		required : true,
 		'default' : false
+	},
+	confirmedCode : {
+		type : String,
+		required : true,
+		'default' : raft.common.uuid
 	},
 	password : {
 		type : String,
@@ -231,19 +244,35 @@ UserSchema.statics.testBucketKey = function(bucketKey, cb) {
 }
 module.exports = mongoose.model('User', UserSchema);
 
-module.exports.findOne({
+module.exports.find({
 
-}, function(err, user) {
-	if (user) {
-		return;
+}, function(err, users) {
+	console.log(err)
+	if (users.length) {
+		return console.log(users);
 	}
 	new module.exports({
 		username : raft.config.get('system:username'),
-		zone : 'user',
-		password : raft.config.get('system:password')
-	}).save(function() {
-		module.exports.find({}, function(err, users) {
-			console.log(users)
+		email : raft.config.get('system:email'),
+		zone : 'system',
+		password : raft.config.get('system:password'),
+		privileges : ['system', 'free', 'user'],
+		confirmed : true
+	}).save(function(err) {
+		console.log(err)
+		new module.exports({
+			username : 'free',
+			email : 'free@free.com',
+			zone : 'free',
+			password : 'free',
+			privileges : ['free'],
+			confirmed : true
+		}).save(function(err) {
+			console.log(err)
+			module.exports.find({}, function(err, users) {
+				console.log(err)
+				console.log(users)
+			})
 		})
 	})
 })

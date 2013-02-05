@@ -15,7 +15,7 @@ Raft features
  * App spawn-er
    * Dependency support with npm
    * File-system `chroot`
-   * Scalble
+   * Scalable
    * Methods start, stop, restart
    * Viewing `app` logs, `npm` logs and more.
    * App load and memory usage

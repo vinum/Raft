@@ -18,7 +18,9 @@ function authSocket(data, socket, callback) {
 				console.log('error', err)
 			})
 			rpc.user = user
-			rpc.functions = raft.service.rpc[user.zone].functions;
+			for (var i = 0; i < user.privileges.length; i++) {
+				rpc.expose(user.privileges[i], raft.service.rpc[user.privileges[i]].functions);
+			};
 			user.setRpc(rpc)
 			socket.on('close', function() {
 				user.removeRpc(rpc)

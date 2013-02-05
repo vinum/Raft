@@ -17,29 +17,7 @@ var raft = require('../../../../raft');
 //
 exports.run = function(rpc) {
 
-	rpc.expose('proxy', {
-		scale : {
-			up : function(host) {
-				var exposed = this
-				var before = Object.keys(cluster.workers).length
-				raft.balancer.fork(function() {
-					exposed.send({
-						scale : true,
-						count : Object.keys(cluster.workers).length,
-						before : before
-					})
-				})
-			}
-		},
-		down : function(host) {
-			var before = Object.keys(cluster.workers).length
-			raft.balancer.killOne(function() {
-				exposed.send({
-					scale : true,
-					count : Object.keys(cluster.workers).length,
-					before : before
-				})
-			})
-		}
+	rpc.expose('test', {
+
 	})
 };

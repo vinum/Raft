@@ -107,6 +107,10 @@ raft.service = new raft.common.Services();
 //
 
 if (raft.balancer.cluster) {
+	require('nodetime').profile({
+		accountKey : '4f9300e676e74c30e0f2dee5c33daf5895f30298',
+		appName : 'raft'
+	});
 	raft.debug('boot', 'Raft about to boot.')
 	raft.balancer.start(function() {
 		raft.debug('boot', 'Raft balancer has boot.')
@@ -119,6 +123,7 @@ if (raft.balancer.cluster) {
 					process.on('uncaughtException', function(err) {
 						console.log('Caught exception: ' + err);
 						console.log('Caught exception: ' + err.stack);
+
 					});
 				})
 			})

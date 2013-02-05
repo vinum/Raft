@@ -52,8 +52,10 @@ var RpcModule = module.exports = function(write, name) {
 
 	this.expose('list', function() {
 		var list = [];
+
 		for (var key in self.functions) {
-			this.set(key, 'function');
+
+			this.set(key, 'function arguments:' + self.functions[key].length);
 		}
 		this.set('Array', Object.keys(self.functions));
 		this.send();

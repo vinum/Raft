@@ -2,7 +2,7 @@ var raft = require('../../../raft')
 function authSocket(data, socket, callback) {
 	raft.mongoose.User.getAuthenticated(data.username, data.password, function(err, user, reason) {
 		if (err) {
-
+			return callback(err)
 		}
 		if (user) {
 			var rpc = new raft.common.Module(function(data) {
@@ -13,29 +13,33 @@ function authSocket(data, socket, callback) {
 			});
 
 			socket.on('error', function(err) {
-				//console.log('error', err)
+				console.log('error', err)
 			})
 			rpc.user = user
 			user.setRpc(rpc)
+
 			socket.on('disconnect', function() {
 				user.removeRpc(rpc)
 			})
-			rpc.functions = raft.service.rpc[user.zone].functions;
+			for (var i = 0; i < user.privileges.length; i++) {
+				rpc.expose(user.privileges[i], raft.service.rpc[user.privileges[i]].functions);
+			};
 
 			callback(null, rpc)
+
 			return;
 		}
 		// otherwise we can determine why we failed
 		var reasons = raft.mongoose.User.failedLogin;
 		switch (reason) {
 			case reasons.NOT_FOUND:
-				callback(new Error('reasons.NOT_FOUND'));
+				callback(new Error('reasons:NOT_FOUND'));
 				break;
 			case reasons.PASSWORD_INCORRECT:
-				callback(new Error('reasons.PASSWORD_INCORRECT'));
+				callback(new Error('reasons:PASSWORD_INCORRECT'));
 				break;
 			case reasons.MAX_ATTEMPTS:
-				callback(new Error('reasons.MAX_ATTEMPTS'));
+				callback(new Error('reasons:MAX_ATTEMPTS'));
 				break;
 		}
 
@@ -47,9 +51,10 @@ module.exports = function(service) {
 	// Create an `nssocket` TCP server
 	//
 	var io = require('socket.io').listen(raft.config.get('transports:socket.io:port'))
-	//io.set("origins", "*:*");
+
 	io.set('log level', 1);
-	io.set('transports', ['xhr-polling', 'websocket', 'htmlfile', 'jsonp-polling']);
+	io.set('transports', ['xhr-polling', 'websocket']);
+
 	io.sockets.on('connection', function(socket) {
 		socket.on('login', function(data) {
 			authSocket(data, socket, function(err) {

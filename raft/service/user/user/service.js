@@ -21,15 +21,9 @@ exports.run = function(rpc) {
 		this.send({
 			username : user.username,
 			role : user.zone,
-			bucketKey : user.bucketKey
-		}, 200);
-	})
-	rpc.expose('user', function listHosts(host) {
-		var user = this.user
-		this.send({
-			username : user.username,
-			role : user.zone,
-			bucketKey : user.bucketKey
+			bucketKey : user.bucketKe,
+			email : user.email,
+			privileges : user.privileges
 		}, 200);
 	})
 };

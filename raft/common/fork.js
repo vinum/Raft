@@ -25,6 +25,10 @@ process.on('message', function(msg) {
 
 	}
 });
+require('nodetime').profile({
+		accountKey : '4f9300e676e74c30e0f2dee5c33daf5895f30298',
+		appName : 'raft proxy'
+	});
 setInterval(function() {
 	var domains = {}
 	for (var domain in balancer.domains) {
@@ -43,7 +47,7 @@ setInterval(function() {
 	process.send({
 		domains : domains
 	})
-}, 2000)
+}, 1000)
 var server = bouncy(balancer.handle.bind(balancer))
 server.on('listen', function() {
 
