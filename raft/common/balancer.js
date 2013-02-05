@@ -101,12 +101,12 @@ Balancer.prototype.handle = function(req, res, bounce) {
 	var drone;
 
 	if (!app)
-		return this.serveText(req, res, bounce, {
+		return this.serveText(req, bounce, {
 			code : 404,
 			message : 'App not found for domain: ' + domain
 		});
 	if (!app.drones.length)
-		return this.serveText(req, res, bounce, {
+		return this.serveText(req, bounce, {
 			code : 404,
 			message : 'Drone not found for : ' + domain
 		});
@@ -118,18 +118,14 @@ Balancer.prototype.handle = function(req, res, bounce) {
 		port : drone.port,
 		host : drone.host
 	}).on('error', function(err) {
-		return self.serveText(req, res, bounce, {
+		return self.serveText(req, bounce, {
 			code : 502,
 			message : err.message
 		});
 	})
 
-	socket.on('close', function() {
-		var stats = app.stats;
-		stats.requests = stats.requests + 1;
-		stats.bytesRead = stats.bytesRead + socket.bytesRead;
-		stats.bytesWritten = stats.bytesWritten + socket.bytesWritten;
-
+	socket.on('end', function() {
+		app.update(socket.bytesRead || 0, socket.bytesWritten || 0)
 	});
 
 	bounce(socket);
@@ -142,8 +138,9 @@ Balancer.prototype.handle = function(req, res, bounce) {
 // Writes `data.message` to the outgoing `res` along with any
 // metadata passed as `data.meta`.
 //
-Balancer.prototype.serveText = function(req, res, bounce, data) {
+Balancer.prototype.serveText = function(req, bounce, data) {
 	var text = data.message, diff = Date.now() - req.ptime;
+	var res = bounce.respond();
 	if (data.meta) {
 		text = [message, qs.unescape(qs.stringify(data.meta, ', '))].join(' | ');
 	}
