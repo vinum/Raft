@@ -182,6 +182,7 @@ The result would be
 #RPC Methods
 
 Package we will use
+
 	var package = {
 	    repository: { type: 'git', url: 'https://github.com/FLYBYME/node-tracker.git' },
 	    name: 'node-bittorrent-tracker',
@@ -324,7 +325,7 @@ Package we will use
 	{
 		"id": "uuid",
 		"params": [{ name : package.name }],
-		"method": "scale.package.count"
+		"method": "user.scale.package.count"
 	}
 ###Result
 	{ count : 1 }
@@ -336,7 +337,7 @@ Package we will use
 	{
 		"id": "uuid",
 		"params": [ package ],
-		"method": "scale.package.up"
+		"method": "user.scale.package.up"
 	}
 ###Result
 	{ scale: true, before: 1, count: 2 }
@@ -348,10 +349,41 @@ Package we will use
 	{
 		"id": "uuid",
 		"params": [ package ],
-		"method": "scale.package.down"
+		"method": "user.scale.package.down"
 	}
 ###Result
 	{ scale: true, before: 2, count: 1 }
+
+
+##env.set
+
+###Request
+	{
+		"id": "uuid",
+		"params": [ 'MY_GRATE_VAL', 'say word', package.name ],
+		"method": "user.env.set"
+	}
+###Result
+	{ set: true }
+
+
+##env.get
+
+###Request
+	{
+		"id": "uuid",
+		"params": [ 'MY_GRATE_VAL', package.name ],
+		"method": "user.env.get"
+	}
+###Result
+	{
+		"drones": {
+			"user": "bob",
+			"name": "node-bittorrent-tracker",
+			"key": "MY_GRATE_VAL",
+			"value": "say word"
+		}
+	}
 
 
 
