@@ -61,7 +61,7 @@ function noop() {
 }
 
 Spawn.prototype.stage = function(i) {
-	
+
 	i ? null : this._stage++
 	this.emit(this._stages[i || this._stage])
 	this.rpc ? this.rpc.invoke('spawn.stage', [this.app.name, this.uid, this._stage, this._stages[i || this._stage], Date.now()], noop) : null
@@ -278,6 +278,7 @@ Spawn.prototype.restart = function() {
 
 Spawn.prototype.restart = function() {
 	this.stage(11)
+	var self = this
 	this.drone.removeListener('exit', self.onExit.bind(self));
 
 	self.drone.removeListener('stdout', self.onStdout.bind(self));
