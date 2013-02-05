@@ -25,10 +25,7 @@ process.on('message', function(msg) {
 
 	}
 });
-require('nodetime').profile({
-		accountKey : '4f9300e676e74c30e0f2dee5c33daf5895f30298',
-		appName : 'raft proxy'
-	});
+
 setInterval(function() {
 	var domains = {}
 	for (var domain in balancer.domains) {
