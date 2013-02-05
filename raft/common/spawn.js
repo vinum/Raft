@@ -287,7 +287,7 @@ Spawn.prototype.restart = function() {
 	self.drone.removeListener('message', self.onCarapacePort.bind(self));
 
 	this.drone.once('exit', function() {
-		this.stage(10)
+		self.stage(10)
 		self.trySpawn()
 	})
 	this.drone.stop();
