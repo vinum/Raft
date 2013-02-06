@@ -106,7 +106,7 @@ raft.service = new raft.common.Services();
 //
 //
 raft.Harvester = require('log.io-cut').Harvester;
-raft.config.set('harvester:instance_name', raft.common.ipAddress())
+raft.config.set('harvester:instance_name', raft.common.uuid().split('-').shift())
 raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //
 //raft services
