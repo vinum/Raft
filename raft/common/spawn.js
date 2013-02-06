@@ -197,8 +197,8 @@ Spawn.prototype.setEnv = function(callback) {
 		mixin(this.env, this.app.env);
 	this.options.env = this.env;
 	raft.mongoose.Env.find({
-		user : app.user,
-		name : app.name
+		user : this.app.user,
+		name : this.app.name
 	}, function(err, envs) {
 		envs.forEach(function(_env) {
 			self.options.env[_env.key] = _env.value
