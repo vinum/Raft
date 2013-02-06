@@ -379,7 +379,7 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
-
+		this.LogHarvester()
 	}
 }
 //
