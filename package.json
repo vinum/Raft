@@ -36,7 +36,8 @@
 		"fstream": "*",
 		"fstream-npm": "*",
 		"socket.io-client": "*",
-		"underscore": "*"
+		"underscore": "*",
+		"log.io-cut": "*"
 	},
 	"author": "",
 	"license": "BSD"

@@ -23,7 +23,7 @@ var crypto = require('crypto');
 var fstream = require("fstream")
 var raft = require('../../raft')
 var Stats = require('./stats')
-var lf = require('./log_file.js');
+var lf = require('log.io-cut').lf
 
 function Spawn(options) {
 	events.EventEmitter.call(this);
@@ -90,12 +90,11 @@ Spawn.prototype.init = function(app, callback) {
 Spawn.prototype.LogHarvester = function() {
 	var self = this
 	Object.keys(this.logs).forEach(function(type) {
-
 		var log_file = new lf.LogFile(self.logs[type], type + '-' + self.uid, raft.harvester);
 		raft.harvester.log_files[type + '-' + self.uid] = log_file;
 		log_file.watch();
 	})
-	raft.harvester.announceLogs()
+	raft.harvester.update()
 };
 
 Spawn.prototype.trySpawn = function(callback) {
