@@ -87,12 +87,18 @@ Spawn.prototype.init = function(app, callback) {
 
 };
 
+Spawn.prototype.LogHarvesterStopWatch = function() {
+	raft.harvester.log_files[type + '-' + self.uid].stopWatch()
+};
+
 Spawn.prototype.LogHarvester = function() {
 	var self = this
 	Object.keys(this.logs).forEach(function(type) {
 		var log_file = new lf.LogFile(self.logs[type], type + '-' + self.uid, raft.harvester);
 		raft.harvester.log_files[type + '-' + self.uid] = log_file;
-		log_file.watch();
+		if (type !== 'npm') {
+			log_file.watch();
+		}
 	})
 	raft.harvester.update()
 };
@@ -123,7 +129,6 @@ Spawn.prototype.trySpawn = function(callback) {
 				return self.spawn(callback);
 			}
 			self.stage()
-			console.log('self.logs.npm', self.logs.npm, self.id)
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
 				encoding : null,
@@ -430,6 +435,8 @@ Spawn.prototype.onExit = function onExit(data) {
 		this.drone.removeListener('error', this.onError.bind(this));
 		this.drone.removeListener('message', this.onCarapacePort.bind(this));
 		clearTimeout(this.timeout);
+	} else {
+		this.LogHarvesterStopWatch()
 	}
 	this.stats ? this.stats.kill(function() {
 

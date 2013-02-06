@@ -127,6 +127,7 @@ if (raft.balancer.cluster) {
 				raft.bucket.start(function() {
 					raft.debug('boot', 'Raft bucket has boot.')
 					raft.harvester.run()
+					return;
 					process.on('uncaughtException', function(err) {
 						console.log('Caught exception: ' + err);
 						console.log('Caught exception: ' + err.stack);
