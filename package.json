@@ -1,7 +1,7 @@
 {
 	"name": "raft",
 	"version": "0.2.0",
-	"description": "Welcome!",
+	"description": "Open Source PaaS built on Node.JS",
 	"main": "raft.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -12,7 +12,6 @@
 	},
 	"dependencies": {
 		"mongoose": "3.0.x",
-		"winston": "*",
 		"nconf": "*",
 		"eventemitter2": "*",
 		"pkginfo": "*",
@@ -21,7 +20,6 @@
 		"restify": "2.0.0",
 		"flatiron": "0.2.8",
 		"forever-monitor": "1.1.0",
-		"haibu-carapace": "0.7.1",
 		"npm": "1.1.63",
 		"semver": "1.0.13",
 		"tar": "0.1.13",
@@ -33,7 +31,10 @@
 		"ejs": "*",
 		"bcrypt": "0.7.3",
 		"bouncy": "1.x",
-		"nssocket": "0.3.8 "
+		"nssocket": "0.3.8",
+		"express": "2.x ",
+		"fstream": "*",
+		"fstream-npm": "*"
 	},
 	"author": "",
 	"license": "BSD"

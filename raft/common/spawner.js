@@ -37,8 +37,8 @@ var Spawner = exports.Spawner = function Spawner(options) {
 // #### @callback {function} Continuation passed to respond to.
 // Removes all source code associated with the specified `app`.
 //
-Spawner.prototype.rmApp = function(appsDir, app, callback) {
-	return rimraf(path.join(appsDir, app.user, app.nameClean), callback);
+Spawner.prototype.rmApp = function(packagesDir, app, callback) {
+	return rimraf(path.join(packagesDir, app.user, app.nameClean), callback);
 };
 
 //

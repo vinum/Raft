@@ -301,7 +301,7 @@ Drone.prototype.clean = function(app, user, callback) {
 		return callback(new Error('Both `user` and `name` are required.'));
 	}
 
-	var self = this, appsDir = this.packagesDir;
+	var self = this, packagesDir = this.packagesDir;
 
 	this.stop(app.name, user, function(err, result) {
 		//
@@ -310,7 +310,7 @@ Drone.prototype.clean = function(app, user, callback) {
 		if (err) {
 			raft.emit('drone:clean:warning', err);
 		}
-		self.spawner.rmApp(appsDir, app, callback);
+		self.spawner.rmApp(packagesDir, app, callback);
 	});
 };
 

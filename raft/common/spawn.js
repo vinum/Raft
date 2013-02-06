@@ -90,19 +90,12 @@ Spawn.prototype.trySpawn = function(callback) {
 	this._stage = 1
 	this.stage()
 
-	var file = this.logsDir + '/' + this.app.user + '.' + this.app.name
-	this.logs = {
-		err : file + '.err.' + this.uid + '.log',
-		out : file + '.out.' + this.uid + '.log',
-		npm : file + '.npm.' + this.uid + '.log'
+	var file = self.repo.lgosDir + '/'
+	self.logs = {
+		err : file + self.uid + '.err.log',
+		out : file + self.uid + '.out.log',
+		npm : file + self.uid + '.npm.log'
 	}
-	var npmlog = fs.createWriteStream(this.logs.npm, {
-		flags : 'w',
-		encoding : null,
-		mode : 0666
-	})
-	this.options.npmlog = npmlog
-
 	this.stage()
 	self.installEngine(function(err) {
 		if (err) {
@@ -118,7 +111,13 @@ Spawn.prototype.trySpawn = function(callback) {
 				return self.spawn(callback);
 			}
 			self.stage()
-
+			console.log('self.logs.npm', self.logs.npm, self.id)
+			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
+				flags : 'w',
+				encoding : null,
+				mode : 0666
+			})
+			self.repo.npmlog.write('NPM START....\n')
 			self.repo.init(function(err, inited) {
 				if (err) {
 					return callback(err);
@@ -328,8 +327,8 @@ Spawn.prototype.onError = function onError(err) {
 		//
 		// Remove listeners to related events.
 		//
-		this.drone.removeListener('exit', this.onExit);
-		this.drone.removeListener('message', this.onCarapacePort);
+		this.drone.removeListener('exit', this.onExit.bind(this));
+		this.drone.removeListener('message', this.onCarapacePort.bind(this));
 
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
@@ -362,8 +361,8 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		//
 		// Remove listeners to related events
 		//
-		this.drone.removeListener('exit', this.onExit);
-		this.drone.removeListener('error', this.onError);
+		this.drone.removeListener('exit', this.onExit.bind(this));
+		this.drone.removeListener('error', this.onError.bind(this));
 
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
@@ -416,8 +415,8 @@ Spawn.prototype.onExit = function onExit(data) {
 		//
 		// Remove listeners to related events.
 		//
-		this.drone.removeListener('error', this.onError);
-		this.drone.removeListener('message', this.onCarapacePort);
+		this.drone.removeListener('error', this.onError.bind(this));
+		this.drone.removeListener('message', this.onCarapacePort.bind(this));
 		clearTimeout(this.timeout);
 	}
 	this.stats ? this.stats.kill(function() {
@@ -426,7 +425,7 @@ Spawn.prototype.onExit = function onExit(data) {
 }
 
 Spawn.prototype.onTimeout = function onTimeout() {
-	this.drone.removeListener('exit', onExit);
+	this.drone.removeListener('exit', this.onExit.bind(this));
 
 	this.drone.stop();
 	var error = new Error('Error spawning drone Script took too long to listen on a socket');
