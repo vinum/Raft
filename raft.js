@@ -7,7 +7,6 @@ var EventEmitter2 = require('eventemitter2').EventEmitter2;
 var winston = require('winston');
 var nconf = require('nconf');
 var path = require('path');
-var logio = require('log.io');
 /**
  * RAFT
  */
@@ -106,8 +105,9 @@ raft.service = new raft.common.Services();
 //
 //
 //
+raft.Harvester = require('./raft/common/log_harvester');
 raft.config.set('harvester:instance_name', raft.common.ipAddress())
-raft.harvester = new logio.Harvester(raft.config.get('harvester'));
+raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //
 //raft services
 //

@@ -34,7 +34,9 @@
 		"nssocket": "0.3.8",
 		"express": "2.x ",
 		"fstream": "*",
-		"fstream-npm": "*"
+		"fstream-npm": "*",
+		"socket.io-client": "*",
+		"underscore": "*"
 	},
 	"author": "",
 	"license": "BSD"
