@@ -47,13 +47,9 @@ var LogHarvester = function(conf) {
 
 	// Create LogFile models, add to harvester pool
 	__(harvester._conf.log_file_paths).each(function(path, label) {
-		fs.readdir(path, function(err, files) {
-			files.forEach(function(file) {
-				var log_file = new lf.LogFile(path + '/' + file, label, harvester);
-				harvester.log_files[label] = log_file;
+		var log_file = new lf.LogFile(path, label, harvester);
+		harvester.log_files[label] = log_file;
 
-			})
-		})
 	});
 }
 
@@ -197,4 +193,4 @@ LogHarvester.prototype = {
 	}
 }
 
-exports.LogHarvester = LogHarvester; 
+exports.LogHarvester = LogHarvester;
