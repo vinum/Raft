@@ -125,7 +125,10 @@ Balancer.prototype.handle = function(req, bounce) {
 	})
 
 	socket.on('end', function() {
-		app.update(socket.bytesRead || 0, socket.bytesWritten || 0)
+		var stats = app.stats;
+		stats.requests = stats.requests + 1;
+		stats.bytesRead = stats.bytesRead + socket.bytesRead;
+		stats.bytesWritten = stats.bytesWritten + socket.bytesWritten;
 	});
 
 	bounce(socket);
