@@ -95,8 +95,7 @@ Spawn.prototype.LogHarvester = function() {
 		raft.harvester.log_files[type + '-' + self.uid] = log_file;
 		log_file.watch();
 	})
-	raft.harvester.disconnect()
-	raft.harvester.announce()
+	raft.harvester.announceLogs()
 };
 
 Spawn.prototype.trySpawn = function(callback) {
@@ -381,7 +380,6 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
-		this.LogHarvester()
 
 	}
 }

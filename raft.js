@@ -107,7 +107,7 @@ raft.service = new raft.common.Services();
 //
 raft.Harvester = require('./raft/common/log_harvester').LogHarvester;
 raft.config.set('harvester:instance_name', raft.common.ipAddress())
-raft.harvester = new raft.Harvester(raft.config.get('harvester'));
+//raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //
 //raft services
 //
@@ -127,7 +127,6 @@ if (raft.balancer.cluster) {
 				raft.bucket.start(function() {
 					raft.debug('boot', 'Raft bucket has boot.')
 
-					raft.harvester.run();
 					process.on('uncaughtException', function(err) {
 						console.log('Caught exception: ' + err);
 						console.log('Caught exception: ' + err.stack);
