@@ -140,9 +140,9 @@ Spawn.prototype.trySpawn = function(callback) {
 					return callback(err);
 				}
 				self.stage()
-
-				self.spawn(callback);
-
+				self.setEnv(function() {
+					self.spawn(callback);
+				})
 			})
 		});
 	})
