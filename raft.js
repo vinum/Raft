@@ -113,7 +113,6 @@ raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //
 
 if (raft.balancer.cluster) {
-	raft.harvester.run()
 	require('nodetime').profile({
 		accountKey : '4f9300e676e74c30e0f2dee5c33daf5895f30298',
 		appName : 'raft'
