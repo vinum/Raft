@@ -160,6 +160,11 @@ LogHarvester.prototype = {
 	},
 
 	// Reconnect helper, retry until connection established
+	disconnect : function(force) {
+		this.socket.disconnect();
+	},
+
+	// Reconnect helper, retry until connection established
 	reconnect : function(force) {
 		if (!force && this.reconnecting) {
 			return;
