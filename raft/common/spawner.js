@@ -38,6 +38,7 @@ var Spawner = exports.Spawner = function Spawner(options) {
 // Removes all source code associated with the specified `app`.
 //
 Spawner.prototype.rmApp = function(packagesDir, app, callback) {
+	console.log(path.join(packagesDir, app.user, raft.common.sanitizeAppname(app.name)))
 	return rimraf(path.join(packagesDir, app.user, raft.common.sanitizeAppname(app.name)), callback);
 };
 
