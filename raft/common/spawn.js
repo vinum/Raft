@@ -23,6 +23,7 @@ var crypto = require('crypto');
 var fstream = require("fstream")
 var raft = require('../../raft')
 var Stats = require('./stats')
+var lf = require('./log_file.js');
 
 function Spawn(options) {
 	events.EventEmitter.call(this);
@@ -85,6 +86,17 @@ Spawn.prototype.init = function(app, callback) {
 	}
 
 };
+
+Spawn.prototype.LogHarvester = function() {
+	var self = this
+	Object.keys(this.logs).forEach(function(type) {
+
+		var log_file = new lf.LogFile(self.logs[type], type + '-' + self.uid, raft.harvester);
+		raft.harvester.log_files[type + '-' + self.uid] = log_file;
+		log_file.watch();
+	})
+};
+
 Spawn.prototype.trySpawn = function(callback) {
 	var self = this
 	this._stage = 1
@@ -367,6 +379,7 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
+		this.LogHarvester()
 
 	}
 }

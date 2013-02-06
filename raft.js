@@ -7,6 +7,7 @@ var EventEmitter2 = require('eventemitter2').EventEmitter2;
 var winston = require('winston');
 var nconf = require('nconf');
 var path = require('path');
+var logio = require('log.io');
 /**
  * RAFT
  */
@@ -96,12 +97,17 @@ raft.balancer = require('./raft/common/balancer');
 //
 raft.Balancer = raft.balancer.Balancer;
 raft.on('*', function(data) {
-	//console.log(data)
+	console.log(data)
 })
 //
 //raft services
 //
 raft.service = new raft.common.Services();
+//
+//
+//
+raft.config.set('harvester:instance_name', raft.common.ipAddress())
+raft.harvester = new logio.Harvester(raft.config.get('harvester'));
 //
 //raft services
 //
@@ -120,6 +126,8 @@ if (raft.balancer.cluster) {
 				raft.debug('boot', 'Raft mongoose has boot.')
 				raft.bucket.start(function() {
 					raft.debug('boot', 'Raft bucket has boot.')
+
+					raft.harvester.run();
 					process.on('uncaughtException', function(err) {
 						console.log('Caught exception: ' + err);
 						console.log('Caught exception: ' + err.stack);
