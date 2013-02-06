@@ -95,6 +95,7 @@ Spawn.prototype.LogHarvester = function() {
 		raft.harvester.log_files[type + '-' + self.uid] = log_file;
 		log_file.watch();
 	})
+	raft.harvester.announce()
 };
 
 Spawn.prototype.trySpawn = function(callback) {
