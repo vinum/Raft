@@ -44,7 +44,6 @@ function Spawn(options) {
 
 	this.uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1) + (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
-
 };
 
 //
@@ -68,7 +67,6 @@ Spawn.prototype.init = function(app, callback) {
 	var repo;
 	this.app = app
 
-	
 	this.stage('INIT')
 
 	try {
@@ -103,14 +101,15 @@ Spawn.prototype.LogHarvester = function() {
 Spawn.prototype.reset = function() {
 
 	this.rpc = raft.mongoose.User.rpc(this.app.user)
-	
+
 	this.responded = false
 	this.errState = false;
 	this.stdout = []
 	this.stderr = []
+	this.setLogs()
 };
 
-Spawn.prototype.setLogs = function(callback) {
+Spawn.prototype.setLogs = function() {
 
 	var file = this.repo.lgosDir + '/';
 	this.logs = {
