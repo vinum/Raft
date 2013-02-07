@@ -270,7 +270,7 @@ Drone.prototype.restart = function(name, user, callback) {
 	function restartAndUpdate(key, next) {
 		var existing = record.drones[key].uid;
 
-		record.drones[key].once('CHILDSTART', function(_, data) {
+		record.drones[key].once('started', function(_, data) {
 			//
 			// When the `restart` event is raised, update the set of processes for this
 			// app which this `Drone` instance has restarted
@@ -686,7 +686,8 @@ Drone.prototype._formatRecord = function(drone, app) {
 
 	response.uid = drone.uid;
 	response.ctime = drone.data.ctime;
-	response.status = drone._stages[drone._stage]
+	response.uptime = Date.now() - drone.data.ctime;
+	response.status = drone._stage
 
 	response.name = drone.app.name;
 	response.user = drone.app.user;

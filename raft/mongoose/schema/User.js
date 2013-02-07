@@ -112,13 +112,12 @@ UserSchema.methods.comparePassword = function(candidatePassword, cb) {
 };
 var rpcs = {}
 UserSchema.methods.setRpc = function(rpc) {
-	
+
 	rpcs[this.username] ? null : rpcs[this.username] = {}
 	rpcs[this.username][rpc.id] = rpc
 };
 
 UserSchema.methods.removeRpc = function(rpc) {
-	
 	delete rpcs[this.username][rpc.id]
 };
 
@@ -248,7 +247,7 @@ module.exports.find({
 
 }, function(err, users) {
 	if (users.length) {
-		return console.log(users);
+		return console.log(users[0].username, users[1].username);
 	}
 	new module.exports({
 		username : raft.config.get('system:username'),
@@ -268,10 +267,6 @@ module.exports.find({
 			confirmed : true
 		}).save(function(err) {
 			console.log(err)
-			module.exports.find({}, function(err, users) {
-				console.log(err)
-				console.log(users)
-			})
 		})
 	})
 })

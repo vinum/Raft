@@ -4,7 +4,7 @@
  *
  */
 var EventEmitter2 = require('eventemitter2').EventEmitter2;
-var winston = require('winston');
+var log = require('npmlog');
 var nconf = require('nconf');
 var path = require('path');
 /**
@@ -17,10 +17,13 @@ var raft = module.exports = new EventEmitter2({
 	maxListeners : 200, // the max number of listeners that can be assigned to an event, defaults to 10.
 });
 //
-//debugger
+raft.on('*', function(data) {
+	console.log(data)
+})
+//
 //setup logger
 //
-raft.debug = console.log.bind(console.log)
+raft.debug = log.info.bind(log)
 //
 // Expose version through `pkginfo`.
 //
@@ -43,7 +46,6 @@ raft.directories = raft.common.mkdir({
 	tar : path.join(__dirname, 'tar'),
 	package : path.join(__dirname, 'package'),
 	logs : path.join(__dirname, 'logs'),
-	bucket : path.join(__dirname, 'bucket'),
 	node : path.join(__dirname, 'node')
 
 })
@@ -53,7 +55,12 @@ raft.directories = raft.common.mkdir({
 raft.config = nconf.file({
 	file : path.join(raft.directories.config, 'config.json')
 });
-raft.bucket = require('./raft/common/bucket-server');
+//
+//nodetime
+//
+if (raft.config.get('nodetime')) {
+	require('nodetime').profile(raft.config.get('nodetime'));
+}
 //
 //mongoose
 //
@@ -66,14 +73,15 @@ raft.Spawner = require('./raft/common/spawner').Spawner;
 //Drone
 //
 raft.Drone = require('./raft/common/drone').Drone;
-
-var drone = raft.drone = new raft.Drone({
+//
+raft.drone = new raft.Drone({
 	packageDir : raft.directories.package,
 	logsDir : raft.directories.logs,
 	snapshotDir : raft.directories.snapshot
 });
+//
 raft.common.onSIGINT(function(next) {
-	drone.cleanAll(next)
+	raft.drone.cleanAll(next)
 })
 //
 //transports
@@ -83,23 +91,21 @@ raft.transports = require('./raft/common/transports');
 //balancer
 //
 raft.Nodev = require('./raft/common/nodev').Nodev;
+//
 raft.nodev = new raft.Nodev({
 	install_dir : raft.directories.node,
 	tmp_dir : raft.directories.tmp
 });
 //
-//transports
+//balancer
 //
 raft.balancer = require('./raft/common/balancer');
 //
 //transports
 //
 raft.Balancer = raft.balancer.Balancer;
-raft.on('*', function(data) {
-	console.log(data)
-})
 //
-//raft services
+//services
 //
 raft.service = new raft.common.Services();
 //
@@ -109,14 +115,10 @@ raft.Harvester = require('log.io-cut').Harvester;
 raft.config.set('harvester:instance_name', raft.common.uuid().split('-').shift())
 raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //
-//raft services
+//start
+//NOTE: need to remove
 //
-
 if (raft.balancer.cluster) {
-	require('nodetime').profile({
-		accountKey : '4f9300e676e74c30e0f2dee5c33daf5895f30298',
-		appName : 'raft'
-	});
 	raft.debug('boot', 'Raft about to boot.')
 	raft.balancer.start(function() {
 		raft.debug('boot', 'Raft balancer has boot.')
@@ -124,20 +126,16 @@ if (raft.balancer.cluster) {
 			raft.debug('boot', 'Raft service has boot.')
 			raft.mongoose.start(function() {
 				raft.debug('boot', 'Raft mongoose has boot.')
-				raft.bucket.start(function() {
-					raft.debug('boot', 'Raft bucket has boot.')
-					raft.harvester.run()
-					return;
-					process.on('uncaughtException', function(err) {
-						console.log('Caught exception: ' + err);
-						console.log('Caught exception: ' + err.stack);
+				raft.harvester.run()
+				return;
+				process.on('uncaughtException', function(err) {
+					console.log('Caught exception: ' + err);
+					console.log('Caught exception: ' + err.stack);
 
-					});
-				})
+				});
 			})
 		})
 	})
 } else {
-
 	raft.debug('boot', 'Process is part of a cluster.')
 }
