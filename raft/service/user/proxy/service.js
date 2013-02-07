@@ -17,7 +17,6 @@ var raft = require('../../../../raft');
 //
 exports.run = function(rpc) {
 	rpc.expose('proxy', {
-
 		stats : function() {
 			var stats = []
 			Object.keys(raft.balancer.cluster.workers).forEach(function(id) {
