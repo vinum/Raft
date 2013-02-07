@@ -44,6 +44,10 @@ function Spawn(options) {
 
 	this.uid = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1) + (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
 
+	this.responded = false
+	this.errState = false;
+	this.stdout = []
+	this.stderr = []
 };
 
 //
@@ -387,6 +391,7 @@ Spawn.prototype.onError = function onError(err) {
 // has bound to then respond to the callback
 //
 Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
+	console.log(this.responded , info && info.event === 'port', info)
 	if (!this.responded && info && info.event === 'port') {
 
 		this.stage('SPAWNPORT')
@@ -417,7 +422,6 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		clearTimeout(this.timeout);
 	} else {
 
-		self.stage('START')
 	}
 }
 //
