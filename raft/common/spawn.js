@@ -145,6 +145,7 @@ Spawn.prototype.trySpawn = function(callback) {
 				out : file + self.uid + '.out.log',
 				npm : file + self.uid + '.npm.log'
 			}
+			console.log(self.logs)
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
 				encoding : null,
