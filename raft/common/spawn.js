@@ -139,7 +139,12 @@ Spawn.prototype.trySpawn = function(callback) {
 				return self.spawn(callback);
 			}
 			self.stage('REPOBOOTSTRAPFINISH')
-			self.setLogs()
+			var file = self.repo.lgosDir + '/';
+			self.logs = {
+				err : file + self.uid + '.err.log',
+				out : file + self.uid + '.out.log',
+				npm : file + self.uid + '.npm.log'
+			}
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
 				encoding : null,
