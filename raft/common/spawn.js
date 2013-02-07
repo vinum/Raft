@@ -135,16 +135,19 @@ Spawn.prototype.trySpawn = function(callback) {
 		self.repo.bootstrap(function(err, existed) {
 			if (err) {
 				return callback(err);
-			} else if (existed) {
-				return self.spawn(callback);
 			}
-			self.stage('REPOBOOTSTRAPFINISH')
 			var file = self.repo.lgosDir + '/';
 			self.logs = {
 				err : file + self.uid + '.err.log',
 				out : file + self.uid + '.out.log',
 				npm : file + self.uid + '.npm.log'
 			}
+
+			if (existed) {
+				return self.spawn(callback);
+			}
+			self.stage('REPOBOOTSTRAPFINISH')
+
 			console.log(self.logs)
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
