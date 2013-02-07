@@ -42,12 +42,13 @@ Drone.prototype.start = function(oldApp, user, callback) {
 
 		function onerror(err) {
 			spawn.removeListener('error', onerror)
-			spawn.removeListener('started', onstart)
+			spawn.removeListener('START', onstart)
 			return callback(err);
 		}
 
 		function onstart() {
 			spawn.removeListener('error', onerror)
+			spawn.removeListener('START', onstart)
 			self._add(app, spawn, function(err, data) {
 				//
 				// If there is an error persisting the drone
@@ -270,7 +271,7 @@ Drone.prototype.restart = function(name, user, callback) {
 	function restartAndUpdate(key, next) {
 		var existing = record.drones[key].uid;
 
-		record.drones[key].once('started', function(_, data) {
+		record.drones[key].once('START', function(_, data) {
 			//
 			// When the `restart` event is raised, update the set of processes for this
 			// app which this `Drone` instance has restarted

@@ -407,9 +407,9 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 			if (err)
 				throw err;
 			self.npmput = data.toString()
-			self.LogHarvester()
 		});
 
+		this.LogHarvester()
 		//
 		// Remove listeners to related events
 		//
