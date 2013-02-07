@@ -391,7 +391,7 @@ Spawn.prototype.onError = function onError(err) {
 // has bound to then respond to the callback
 //
 Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
-	console.log(this.responded , info && info.event === 'port', info)
+	console.log(this.responded, info && info.event === 'port', info)
 	if (!this.responded && info && info.event === 'port') {
 
 		this.stage('SPAWNPORT')
@@ -408,7 +408,6 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 				throw err;
 			self.npmput = data.toString()
 			self.LogHarvester()
-			self.stage('START')
 		});
 
 		//
@@ -420,8 +419,7 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
-	} else {
-
+		self.stage('START')
 	}
 }
 //
