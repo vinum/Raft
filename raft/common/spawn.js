@@ -402,7 +402,8 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 			if (err)
 				throw err;
 			self.npmput = data.toString()
-			self.emit('started')
+			self.LogHarvester()
+			self.stage('START')
 		});
 
 		//
@@ -414,7 +415,6 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		this.drone.removeListener('stdout', this.onStdout.bind(this));
 		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
-		this.LogHarvester()
 	}
 }
 //
