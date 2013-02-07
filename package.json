@@ -40,6 +40,7 @@
 		"socket.io": "*",
 		"optimist": "*",
 		"async": "*",
+		"daemon": "*",
 		"underscore": "*",
 		"log.io-cut": "*",
 		"nodetime": "0.8.2"

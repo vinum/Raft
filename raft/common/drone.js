@@ -60,7 +60,7 @@ Drone.prototype.start = function(oldApp, user, callback) {
 
 
 		spawn.once('error', onerror)
-		spawn.on('started', onstart)
+		spawn.on('START', onstart)
 		spawn.init(app, onerror)
 		spawn.trySpawn(onerror)
 	}
