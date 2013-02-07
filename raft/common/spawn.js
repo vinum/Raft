@@ -106,7 +106,6 @@ Spawn.prototype.reset = function() {
 	this.errState = false;
 	this.stdout = []
 	this.stderr = []
-	this.setLogs()
 };
 
 Spawn.prototype.setLogs = function() {
@@ -140,6 +139,7 @@ Spawn.prototype.trySpawn = function(callback) {
 				return self.spawn(callback);
 			}
 			self.stage('REPOBOOTSTRAPFINISH')
+			self.setLogs()
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
 				encoding : null,
