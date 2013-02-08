@@ -1,3 +1,9 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
 //
 // ### Include Exports
 // Export other components in the module

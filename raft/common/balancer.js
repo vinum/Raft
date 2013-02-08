@@ -1,10 +1,8 @@
 /*
- * index.js: Top-level include for the drone module.
  *
- * (C) 2010, Nodejitsu Inc.
+ * (C) 2013, MangoRaft.
  *
  */
-
 var util = require('util')
 var fs = require('fs')
 var net = require('net')
@@ -29,13 +27,11 @@ var compiled = function() {
 //
 //
 //
-
 fs.readFile(__dirname + '/static/404.html', function(err, data) {
 	if (err)
 		throw err;
 	compiled = ejs.compile(data.toString(), {});
 });
-
 //
 // ### @matchers
 // Regular expression parsers for handling different
@@ -112,16 +108,12 @@ Balancer.prototype.handle = function(req, bounce) {
 		});
 
 	drone = app.drones.shift()
+
 	app.drones.push(drone)
 
 	var socket = net.connect({
 		port : drone.port,
 		host : drone.host
-	}).on('error', function(err) {
-		return self.serveText(req, bounce, {
-			code : 502,
-			message : err.message
-		});
 	})
 
 	socket.on('end', function() {
@@ -129,6 +121,7 @@ Balancer.prototype.handle = function(req, bounce) {
 		stats.requests = stats.requests + 1;
 		stats.bytesRead = stats.bytesRead + socket.bytesRead;
 		stats.bytesWritten = stats.bytesWritten + socket.bytesWritten;
+
 	});
 
 	bounce(socket);

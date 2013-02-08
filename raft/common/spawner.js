@@ -1,7 +1,6 @@
 /*
- * spawner.js: Spawner object responsible for starting carapace processes.
  *
- * (C) 2010, Nodejitsu Inc.
+ * (C) 2013, MangoRaft.
  *
  */
 

@@ -1,5 +1,6 @@
 /*
- * index.js: Top level module include for utils module.
+ *
+ * (C) 2013, MangoRaft.
  *
  */
 var mkdirp = require('mkdirp');

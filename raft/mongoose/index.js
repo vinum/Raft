@@ -1,5 +1,7 @@
-/***
- * Node modules
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
  */
 
 var events = require('events');

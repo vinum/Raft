@@ -1,3 +1,10 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
+
 var bouncy = require('bouncy');
 var events = require('events');
 var fs = require('fs');

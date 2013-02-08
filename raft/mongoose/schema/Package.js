@@ -1,3 +1,10 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
+
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 var raft = require('../../../raft')

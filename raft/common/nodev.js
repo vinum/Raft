@@ -1,3 +1,9 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
 var fs = require('fs')
 var path = require('path')
 var semver = require('semver')

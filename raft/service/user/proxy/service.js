@@ -1,7 +1,6 @@
 /*
- * service.js: RESTful JSON-based web service for the drone module.
  *
- * (C) 2010, Nodejitsu Inc.
+ * (C) 2013, MangoRaft.
  *
  */
 

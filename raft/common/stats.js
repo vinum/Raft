@@ -1,7 +1,8 @@
-/**
- * Module dependencies.
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
  */
-
 var util = require('util');
 var crypto = require('crypto');
 var http = require('http');

@@ -1,3 +1,9 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
 var raft = require('../../../raft')
 function authSocket(data, socket, callback) {
 	raft.mongoose.User.getAuthenticated(data.username, data.password, function(err, user, reason) {

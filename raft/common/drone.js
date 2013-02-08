@@ -1,7 +1,6 @@
 /*
- * drone.js: Controls the application lifetime for nodejs applications on a single server.
  *
- * (C) 2010, Nodejitsu Inc.
+ * (C) 2013, MangoRaft.
  *
  */
 

@@ -1,3 +1,9 @@
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
+ */
+
 var nssocket = require('nssocket');
 var raft = require('../../../raft')
 

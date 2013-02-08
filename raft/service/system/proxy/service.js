@@ -1,10 +1,8 @@
 /*
- * service.js: RESTful JSON-based web service for the drone module.
  *
- * (C) 2010, Nodejitsu Inc.
+ * (C) 2013, MangoRaft.
  *
  */
-
 var path = require('path');
 var util = require('util');
 var raft = require('../../../../raft');

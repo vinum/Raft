@@ -1,8 +1,11 @@
-var util = require('util');
-/**
+/*
  *
+ * (C) 2013, MangoRaft.
  *
  */
+
+var util = require('util');
+
 
 var Exposed = module.exports = function(data, id, user, cb) {
 	var hasSent = false;

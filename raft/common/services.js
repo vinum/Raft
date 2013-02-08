@@ -1,5 +1,7 @@
-/**
- * Module dependencies.
+/*
+ *
+ * (C) 2013, MangoRaft.
+ *
  */
 
 var util = require('util');
