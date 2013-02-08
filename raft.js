@@ -1,6 +1,6 @@
-/*****
+/*
  *
- *
+ * (C) 2013, MangoRaft.
  *
  */
 var EventEmitter2 = require('eventemitter2').EventEmitter2;
@@ -109,6 +109,11 @@ raft.Balancer = raft.balancer.Balancer;
 //
 raft.service = new raft.common.Services();
 //
+//services
+//
+raft.Distributed = require('./raft/common/distributed').Distributed;
+
+//
 //
 //
 raft.Harvester = require('log.io-cut').Harvester;
@@ -119,6 +124,10 @@ raft.harvester = new raft.Harvester(raft.config.get('harvester'));
 //NOTE: need to remove
 //
 if (raft.balancer.cluster) {
+	if (raft.config.get('distributed')) {
+		raft.distributed = new raft.Distributed(raft.config.get('distributed'))
+	}
+
 	raft.debug('boot', 'Raft about to boot.')
 	raft.balancer.start(function() {
 		raft.debug('boot', 'Raft balancer has boot.')
