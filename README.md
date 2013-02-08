@@ -37,15 +37,15 @@ Raft features
 
 ##Install
 To install just git clone.
-
+```
 	git clone https://github.com/MangoRaft/Raft.git
 	cd Raft
-
+```
 
 # CONFIG
 
 Basic config setup. Create a file called config.json in the config folder
-
+```json
 	{
 		"proxy": {
 			"port": 8000// port that the proxy should listen on. Port 80 is what you want
@@ -96,16 +96,16 @@ Basic config setup. Create a file called config.json in the config folder
 		},
 		"domain": "mydomain.com"//the root domain
 	}
-
+```
 ##Balancer setup
 
 The blancer will listen on what ever port you spesify in `config.proxy.port`
 if you want `https` you can generate the `privatekey.pem` and `certificate.csr` files using the following commands:
-
+```
 	openssl genrsa -out privatekey.pem 1024 
 	openssl req -new -key config/privatekey.pem -out config/certrequest.csr 
 	openssl x509 -req -in config/certrequest.csr -signkey config/privatekey.pem -out config/certificate.pem
-
+```
 
 ##NPM Install
 To install Raft just do the normal `npm install`
@@ -117,13 +117,13 @@ Note: Needs sudo for the chrroting of the apps.
 ##Communication Channels
 Raft has been build to run on any communication transports `http, tcp, websocket` Raft uses a common JSON RPC v1 that lays ontop of what ever transports avalible. 
 This would be a basic rpc request to list all avalible methods on the server.
-
+```json
 	{
 		"id": "uuid",
 		"params": [],
 		"method": "list"
 	}
-	
+```	
 The result would be
 
 	{
