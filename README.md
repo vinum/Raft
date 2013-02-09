@@ -48,53 +48,58 @@ Basic config setup. Create a file called config.json in the config folder
 ```json
 	{
 		"proxy": {
-			"port": 8000// port that the proxy should listen on. Port 80 is what you want
+			"port": 8000
 		},
 		"timmer": {
-			"stats": 2500,//update process load and memory
-			"proxy": 2500//update proxy bandwidth and requests
+			"stats": 2500,
+			"proxy": 2500
 		},
 		"system": {
-			"username": "system-suer",//system/admin user account.
+			"username": "admin",
 			"password": "password",
 			"email": "system-noreply@gmail.com"
 		},
-		"bucket": {//This will be remove over time.
-			"port": 9003,
-			"directory": "/path/to/files"
+		"nodetime": {
+			"accountKey": "your-node-time-key",
+			"appName": "raft"
 		},
 		"db": {
-			"mongodb": {//mongodb config. Still need to ad auth support
+			"mongodb": {
 				"host": "localhost",
 				"port": 27017,
 				"path": "/data/db"
 			}
 		},
-		"transports": {
-			"http": {
-				"load": false,//true will run/ false will not
-				"port": 9000,
-				"host": "localhost"
+		"harvester": {
+			"server": {
+				"host": "you-log-harvester.com",
+				"port": 8998
 			},
+			"log_file_paths": {
+				"logio_harvester": "/var/log/log.io/harvester.log"
+			},
+			"instance_name": ""
+		},
+		"transports": {
 			"socket.io": {
 				"load": true,
-				"port": 9004,//the port you want to listen on. Could be port 0
+				"port": 9004,
 				"host": "localhost"
 			},
 			"nssocket": {
 				"load": true,
 				"port": 9002,
-				"host": "localhost"//hostname of the server. Does now get used.
+				"host": "localhost"
 			}
 		},
-		"mail": {//so confirm users emails
+		"mail": {
 			"service": "Gmail",
 			"auth": {
 				"user": "noreply@gmail.com",
 				"pass": "password"
 			}
 		},
-		"domain": "mydomain.com"//the root domain
+		"domain": "yoursite.com"
 	}
 ```
 ##Balancer setup
