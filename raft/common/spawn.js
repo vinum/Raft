@@ -411,7 +411,7 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 			self.npmput = data.toString()
 		});
 
-		this.LogHarvester()
+		//this.LogHarvester()
 		//
 		// Remove listeners to related events
 		//
@@ -474,7 +474,7 @@ Spawn.prototype.onExit = function onExit(data) {
 		this.drone.removeListener('message', this.onCarapacePort.bind(this));
 		clearTimeout(this.timeout);
 	} else {
-		this.LogHarvesterStopWatch()
+		//this.LogHarvesterStopWatch()
 	}
 	this.stats ? this.stats.kill(function() {
 
