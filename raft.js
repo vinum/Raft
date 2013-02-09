@@ -135,8 +135,8 @@ if (raft.balancer.cluster) {
 			raft.debug('boot', 'Raft service has boot.')
 			raft.mongoose.start(function() {
 				raft.debug('boot', 'Raft mongoose has boot.')
-				raft.harvester.run()
 				return;
+				raft.harvester.run()
 				process.on('uncaughtException', function(err) {
 					console.log('Caught exception: ' + err);
 					console.log('Caught exception: ' + err.stack);
