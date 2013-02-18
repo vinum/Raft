@@ -4,7 +4,6 @@
  *
  */
 
-
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 var raft = require('../../../raft')
@@ -15,12 +14,11 @@ var Package = new Schema({
 	"domain" : String,
 	"version" : String,
 	"repository" : {
-
+		//
 	},
 	"scripts" : {
 		"start" : String
 	},
-	versionCode : Number
+	"versionCode" : Number
 });
 
-module.exports = mongoose.model('Package', Package);

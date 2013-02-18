@@ -6,28 +6,14 @@
 
 var fs = require('fs')
 var path = require('path')
-var forever = require('forever-monitor')
-var semver = require('semver')
 var events = require('events')
-var mixin = require('flatiron').common.mixin
 var async = require('flatiron').common.async
 var rimraf = require('flatiron').common.rimraf
-var repositories = require('haibu-repo')
-var Repository = repositories.Repository
-var getPid = require('ps-pid');
-var tar = require('tar')
-var Packer = require("fstream-npm")
-var fs = require('fs')
-var zlib = require('zlib')
-var exec = require('child_process').exec;
-var crypto = require('crypto');
-var fstream = require("fstream")
 var raft = require('../../raft')
 var Spawn = require('./spawn')
-var Spawner = exports.Spawner = function Spawner(options) {
 
+var Spawner = exports.Spawner = function(options) {
 	this.options = options
-
 };
 //
 // ### function rmApp (appsDir, app, callback)

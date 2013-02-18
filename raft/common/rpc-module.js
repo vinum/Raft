@@ -5,10 +5,6 @@
  */
 var events = require('events');
 var util = require('util');
-var fs = require('fs');
-var cp = require('child_process');
-var net = require('net');
-var crypto = require('crypto');
 
 /**
  *

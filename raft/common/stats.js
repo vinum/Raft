@@ -4,26 +4,22 @@
  *
  */
 var util = require('util');
-var crypto = require('crypto');
-var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var events = require('events');
 var exec = require('child_process').exec;
 var getPid = require('ps-pid');
-var restify = require('restify');
 
 var raft = require('../../raft')
 
 function Stats(meta) {
 	events.EventEmitter.call(this);
-	var self = this
 	this.statsObject = null
 	this.isKill = false
 	this.data = {}
 	this.meta = meta
 
-	self.timmer()
+	this.timmer()
 };
 
 //

@@ -98,13 +98,7 @@ UserSchema.pre('save', function(next) {
 			// set the hashed password back on our user document
 			user.password = hash;
 
-			module.exports.count(function(err, count) {
-				if (count === 1) {
-					user.zone = 'admin';
-					user.confirmed = true;
-				}
-				next();
-			})
+			next();
 		});
 	});
 });
@@ -116,7 +110,8 @@ UserSchema.methods.comparePassword = function(candidatePassword, cb) {
 		cb(null, isMatch);
 	});
 };
-var rpcs = {}
+
+var rpcs = {};
 UserSchema.methods.setRpc = function(rpc) {
 
 	rpcs[this.username] ? null : rpcs[this.username] = {}
@@ -234,23 +229,10 @@ UserSchema.statics.getAuthenticated = function(username, password, cb) {
 	});
 };
 
-UserSchema.statics.testBucketKey = function(bucketKey, cb) {
-	this.findOne({
-		bucketKey : bucketKey
-	}, function(err, user) {
-		if (err) {
-			return cb(err);
-		}
-		if (!user) {
-			return cb(null, null, reasons.NOT_FOUND);
-		}
-		return cb(null, user);
-	})
-}
 module.exports = mongoose.model('User', UserSchema);
 
 module.exports.find({
-
+	//
 }, function(err, users) {
 	if (users.length) {
 		return console.log(users[0].username, users[1].username);

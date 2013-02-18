@@ -5,12 +5,8 @@
  */
 
 var util = require('util');
-var crypto = require('crypto');
-var http = require('http');
-var fs = require('fs');
 var path = require('path');
 var events = require('events');
-var restify = require('restify');
 
 var raft = require('../../raft')
 
