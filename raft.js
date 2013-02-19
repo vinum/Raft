@@ -113,38 +113,3 @@ raft.service = new raft.common.Services();
 //
 raft.Distributed = require('./raft/common/distributed').Distributed;
 
-//
-//
-//
-raft.Harvester = require('log.io-cut').Harvester;
-raft.config.set('harvester:instance_name', raft.common.uuid().split('-').shift())
-raft.harvester = new raft.Harvester(raft.config.get('harvester'));
-//
-//start
-//NOTE: need to remove
-//
-if (raft.balancer.cluster) {
-	if (raft.config.get('distributed')) {
-		raft.distributed = new raft.Distributed(raft.config.get('distributed'))
-	}
-
-	raft.debug('boot', 'Raft about to boot.')
-	raft.balancer.start(function() {
-		raft.debug('boot', 'Raft balancer has boot.')
-		raft.service.start(function() {
-			raft.debug('boot', 'Raft service has boot.')
-			raft.mongoose.start(function() {
-				raft.debug('boot', 'Raft mongoose has boot.')
-				return;
-				raft.harvester.run()
-				process.on('uncaughtException', function(err) {
-					console.log('Caught exception: ' + err);
-					console.log('Caught exception: ' + err.stack);
-
-				});
-			})
-		})
-	})
-} else {
-	raft.debug('boot', 'Process is part of a cluster.')
-}
