@@ -26,7 +26,6 @@ var raft = require('../../raft')
 
 var Stats = require('./stats')
 
-var lf = require('log.io-cut').lf
 
 function Spawn(options) {
 	events.EventEmitter.call(this);

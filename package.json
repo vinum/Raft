@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.2.3",
+	"version": "0.3.0",
 	"description": "Open Source PaaS built on Node.JS",
 	"main": "raft.js",
 	"scripts": {
@@ -15,9 +15,7 @@
 		"nconf": "*",
 		"eventemitter2": "*",
 		"npmlog": "*",
-		"pkginfo": "*",
 		"mkdirp": "*",
-		"raft-api": "*",
 		"restify": "2.0.0",
 		"flatiron": "0.2.8",
 		"forever-monitor": "1.1.0",
@@ -40,10 +38,7 @@
 		"socket.io": "*",
 		"optimist": "*",
 		"async": "*",
-		"daemon": "*",
-		"underscore": "*",
-		"log.io-cut": "*",
-		"nodetime": "0.8.2"
+		"daemon": "*"
 	},
 	"homepage": "http://mangoraft.com",
 	"author": "Tim <git@mangoraft.com>",
