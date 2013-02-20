@@ -7,6 +7,10 @@
 	        
 # MAIN [MangoRaft](http://mangoraft.com/)
 
+#NOTE
+As we speak this is the working branch. Dont use this branch will release
+
+
 Raft is a PaaS for node. Raft supports a wide range of functions to run multi-user, multi-app, mulit-infa. 
 A lot of inspiration has come from the great people at nodejitu, nodester and AppFog.
 
