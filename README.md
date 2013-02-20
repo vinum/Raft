@@ -9,6 +9,9 @@
 
 [MangoRaft](http://mangoraft.com/)
 
+#NOTE
+This is one of the first version. Take a look at the git branches to find the latest code
+
 
 # CONFIG
 
