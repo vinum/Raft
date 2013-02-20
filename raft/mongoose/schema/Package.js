@@ -22,3 +22,4 @@ var Package = new Schema({
 	"versionCode" : Number
 });
 
+module.exports = mongoose.model('Package', Package);

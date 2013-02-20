@@ -55,12 +55,7 @@ raft.directories = raft.common.mkdir({
 raft.config = nconf.file({
 	file : path.join(raft.directories.config, 'config.json')
 });
-//
-//nodetime
-//
-if (raft.config.get('nodetime')) {
-	require('nodetime').profile(raft.config.get('nodetime'));
-}
+
 //
 //mongoose
 //
@@ -104,10 +99,6 @@ raft.balancer = require('./raft/common/balancer');
 //transports
 //
 raft.Balancer = raft.balancer.Balancer;
-//
-//services
-//
-raft.service = new raft.common.Services();
 //
 //services
 //
