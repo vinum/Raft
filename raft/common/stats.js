@@ -41,22 +41,14 @@ Stats.prototype.timmer = function() {
 		}
 		self.data = loadData
 
-		new raft.mongoose.Stats({
-			pcpu : loadData.pcpu,
-			rssize : loadData.rssize,
-			vsz : loadData.vsz,
-			name : self.meta.name,
-			user : self.meta.user,
-			uid : self.meta.uid
-		}).save(function() {
-			self.emit('update')
-			if (raft.hook) {
-				raft.hook.emit('stats:update', self.get())
-			}
-			setTimeout(function() {
-				self.timmer()
-			}, raft.config.get('timmer:stats') || 5000)
-		})
+		self.emit('update')
+
+		if (raft.hook) {
+			raft.hook.emit('stats::update', self.get())
+		}
+		setTimeout(function() {
+			self.timmer()
+		}, raft.config.get('timmer:stats') || 5000)
 	})
 }
 Stats.prototype.get = function() {
