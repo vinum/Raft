@@ -251,6 +251,7 @@ Balancer.prototype.syncRequestsUpdate = function(msg) {
 	var selfDomains = this.domains
 	var self = this;
 	var domainKeys = Object.keys(domains)
+
 	domainKeys.forEach(function(domain) {
 		var sentDomain = domains[domain]
 		var selfDomain = selfDomains[domain]
@@ -259,6 +260,9 @@ Balancer.prototype.syncRequestsUpdate = function(msg) {
 			selfDomain.stats[key] = selfDomain.stats[key] + sentDomain.stats[key]
 		}
 	})
+	if (raft.hook) {
+		raft.hook.emit('blanacer::update', selfDomain)
+	}
 }
 //
 // ### Include Exports
