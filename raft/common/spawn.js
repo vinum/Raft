@@ -64,8 +64,9 @@ Spawn.prototype.stage = function(stage) {
 
 	this._stage = stage
 	this.emit(stage)
-	this.rpc ? this.rpc.invoke('spawn.stage', [this.app.name, this.uid, null, stage, Date.now()], noop) : null
 }
+
+
 Spawn.prototype.init = function(app, callback) {
 	var self = this
 	var repo;
@@ -85,26 +86,8 @@ Spawn.prototype.init = function(app, callback) {
 
 };
 
-Spawn.prototype.LogHarvesterStopWatch = function() {
-	raft.harvester.log_files[type + '-' + self.uid].stopWatch()
-};
-
-Spawn.prototype.LogHarvester = function() {
-	this.stage('LOGHARVESTER')
-	var self = this
-	Object.keys(this.logs).forEach(function(type) {
-		var log_file = new lf.LogFile(self.logs[type], type + '-' + self.uid, raft.harvester);
-		raft.harvester.log_files[type + '-' + self.uid] = log_file;
-		if (type !== 'npm') {
-			log_file.watch();
-		}
-	})
-	raft.harvester.update()
-};
-
 Spawn.prototype.reset = function() {
 
-	this.rpc = raft.mongoose.User.rpc(this.app.user)
 
 	this.responded = false
 	this.errState = false;
@@ -141,6 +124,7 @@ Spawn.prototype.trySpawn = function(callback) {
 				return callback(err);
 			}
 			var file = self.repo.lgosDir + '/';
+			
 			self.logs = {
 				err : file + self.uid + '.err.log',
 				out : file + self.uid + '.out.log',
@@ -152,7 +136,6 @@ Spawn.prototype.trySpawn = function(callback) {
 			}
 			self.stage('REPOBOOTSTRAPFINISH')
 
-			console.log(self.logs)
 			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
 				flags : 'w',
 				encoding : null,
