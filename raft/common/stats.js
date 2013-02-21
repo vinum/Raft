@@ -50,6 +50,9 @@ Stats.prototype.timmer = function() {
 			uid : self.meta.uid
 		}).save(function() {
 			self.emit('update')
+			if (raft.hook) {
+				raft.hook.emit('stats:update', self.get())
+			}
 			setTimeout(function() {
 				self.timmer()
 			}, raft.config.get('timmer:stats') || 5000)
