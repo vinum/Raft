@@ -17,7 +17,7 @@ var raft = module.exports = new EventEmitter2({
 	maxListeners : 200, // the max number of listeners that can be assigned to an event, defaults to 10.
 });
 //
-//setup logger
+//setup logger/debug
 //
 raft.debug = log.info.bind(log)
 //
@@ -33,11 +33,11 @@ raft.version = raft.package.version;
 //
 raft.common = require('./raft/common');
 //
-//common
+//Stats
 //
 raft.Stats = require('./raft/common/stats');
 //
-//common
+//Module
 //
 raft.Module = require('./raft/common/rpc-module');
 //
@@ -57,7 +57,7 @@ raft.Drone = require('./raft/common/drone').Drone;
 //
 raft.transports = require('./raft/common/transports');
 //
-//balancer
+//Nodev
 //
 raft.Nodev = require('./raft/common/nodev').Nodev;
 //
@@ -65,7 +65,15 @@ raft.Nodev = require('./raft/common/nodev').Nodev;
 //
 raft.balancer = require('./raft/common/balancer');
 //
-//transports
+//Balancer
 //
 raft.Balancer = raft.balancer.Balancer;
+//
+//Balancer
+//
+raft.boot = function(config, cb) {
+	raft.directories = config.get('directories')
+	raft.config = config
+	raft.mongoose.start(cb)
+};
 

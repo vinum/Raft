@@ -26,7 +26,6 @@ var raft = require('../../raft')
 
 var Stats = require('./stats')
 
-
 function Spawn(options) {
 	events.EventEmitter.call(this);
 	options = options || {};
@@ -404,12 +403,8 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 		};
 
 		this.drone.minUptime = 0;
-		fs.readFile(this.logs.npm, function(err, data) {
-			if (err)
-				throw err;
-			self.npmput = data.toString()
-		});
 
+		this.npmput = []
 		//this.LogHarvester()
 		//
 		// Remove listeners to related events

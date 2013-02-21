@@ -395,6 +395,7 @@ exports.start = function(callback) {
 	if (exports.started) {
 		return callback();
 	}
+	console.log('balancer start')
 	cluster.setupMaster({
 		exec : __dirname + '/fork.js',
 		args : raft.config.get('proxy:port') ? [raft.config.get('proxy:port')] : ['8000'],

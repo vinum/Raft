@@ -122,7 +122,16 @@ Drone.prototype.stopOne = function(name, user, cleanup, callback) {
 			results.push(app.drones[key].process);
 			var pid = app.drones[key].pid
 			var uid = app.drones[key].data.uid
-			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			var data = self._formatRecord(app.drones[key])
+			raft.hook.emit('balancer::destroy-drone', {
+				drone : {
+					host : data.host,
+					port : data.port
+				},
+				app : {
+					domain : app.app.domain
+				}
+			})
 			self._remove(app, user, app.drones[key], cleanup, function() {
 				raft.mongoose.Drone.remove({
 					pid : pid,
@@ -140,7 +149,16 @@ Drone.prototype.stopOne = function(name, user, cleanup, callback) {
 				message : err.message
 			});
 			app.drones[key].monitor.removeListener('stop', onStop);
-			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			var data = self._formatRecord(app.drones[key])
+			raft.hook.emit('balancer::destroy-drone', {
+				drone : {
+					host : data.host,
+					port : data.port
+				},
+				app : {
+					domain : app.app.domain
+				}
+			})
 			raft.mongoose.Drone.remove({
 				pid : app.drones[key].pid,
 				uid : app.drones[key].uid
@@ -193,7 +211,16 @@ Drone.prototype.stop = function(name, user, cleanup, callback) {
 			results.push(app.drones[key].process);
 			var pid = app.drones[key].pid
 			var uid = app.drones[key].data.uid
-			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			var data = self._formatRecord(app.drones[key])
+			raft.hook.emit('balancer::destroy-drone', {
+				drone : {
+					host : data.host,
+					port : data.port
+				},
+				app : {
+					domain : app.app.domain
+				}
+			})
 			self._remove(app, user, app.drones[key], cleanup, function() {
 				raft.mongoose.Drone.remove({
 					pid : pid,
@@ -211,7 +238,16 @@ Drone.prototype.stop = function(name, user, cleanup, callback) {
 				message : err.message
 			});
 			app.drones[key].monitor.removeListener('stop', onStop);
-			raft.balancer.destroyDrone(self._formatRecord(app.drones[key]), app.app)
+			var data = self._formatRecord(app.drones[key])
+			raft.hook.emit('balancer::destroy-drone', {
+				drone : {
+					host : data.host,
+					port : data.port
+				},
+				app : {
+					domain : app.app.domain
+				}
+			})
 			raft.mongoose.Drone.remove({
 				pid : app.drones[key].pid,
 				uid : app.drones[key].uid
@@ -610,8 +646,15 @@ Drone.prototype._add = function(app, drone, callback) {
 	var data = self._formatRecord(drone)
 
 	new raft.mongoose.Drone(data).save(function(err) {
-		raft.balancer.addApp(app)
-		raft.balancer.addDrone(data, app)
+		raft.hook.emit('balancer::add-drone', {
+			drone : {
+				host : data.host,
+				port : data.port
+			},
+			app : {
+				domain : app.domain
+			}
+		})
 		callback(null, data);
 	})
 };
