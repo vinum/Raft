@@ -12,7 +12,7 @@ var getPid = require('ps-pid');
 
 var raft = require('../../raft')
 
-function Stats(meta) {
+var Stats = module.exports.Stats = function(meta) {
 	events.EventEmitter.call(this);
 	this.statsObject = null
 	this.isKill = false
@@ -26,8 +26,6 @@ function Stats(meta) {
 // Inherit from `events.EventEmitter`.
 //
 util.inherits(Stats, events.EventEmitter);
-
-module.exports = Stats
 
 Stats.prototype.timmer = function() {
 	var self = this
@@ -48,7 +46,7 @@ Stats.prototype.timmer = function() {
 		}
 		setTimeout(function() {
 			self.timmer()
-		}, raft.config.get('timmer:stats') || 5000)
+		}, 5000)
 	})
 }
 Stats.prototype.get = function() {

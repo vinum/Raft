@@ -11,16 +11,16 @@ var os = require('os')
 var path = require('path')
 var exec = require('child_process').exec
 var spawn = require('child_process').spawn
+
 var flatiron = require('flatiron');
+
 var async = flatiron.common.async;
 var rimraf = flatiron.common.rimraf;
+
 var raft = require('../../raft');
 
 var common = module.exports = flatiron.common;
-//
-common.Services = require('./services')
-//
-common.Module = require('./rpc-module')
+
 //
 // **REALLY DONT DO THIS HERE! But where?**
 //
@@ -50,35 +50,21 @@ common.getEndKey = function(startKey) {
 	return startKey.slice(0, length - 1) + String.fromCharCode(startKey.charCodeAt(length - 1) + 1);
 };
 
-//
-// ### function rmApp (appsDir, app, callback)
-// #### @appsDir {string} Root for all application source files.
-// #### @app {App} Application to remove directories for.
-// #### @callback {function} Continuation passed to respond to.
-// Removes all source code associated with the specified `app`.
-//
-common.rmApp = function(appsDir, app, callback) {
-	return rimraf(path.join(appsDir, app.user, app.name), callback);
+common.rmApp = function(packagesDir, app, callback) {
+	return rimraf(path.join(packagesDir, app.user, common.sanitizeAppname(app.name)), callback);
 };
 
-//
-// ### function rmApps (appsDir, callback)
-// #### @appsDir {string} Root for all application source files.
-// #### @callback {function} Continuation passed to respond to.
-// Removes all source code associated with all users and all applications
-// from this raft process.
-//
 common.rmApps = function(appsDir, callback) {
 	if (!callback && typeof appsDir === 'function') {
 		callback = appsDir;
 		appsDir = null;
 	}
-	appsDir = appsDir || raft.config.get('directories:apps');
 	fs.readdir(appsDir, function(err, users) {
 		if (err) {
 			return callback(err);
 		}
-		async.forEach(users, function rmUser(user, next) {
+
+		async.forEach(users, function(user, next) {
 			rimraf(path.join(appsDir, user), next);
 		}, callback);
 	});

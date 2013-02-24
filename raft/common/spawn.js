@@ -4,41 +4,35 @@
  *
  */
 
-var fs = require('fs')
-var path = require('path')
-var util = require('util')
-var fs = require('fs')
-var events = require('events')
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+var fs = require('fs');
+var events = require('events');
 
-var forever = require('forever-monitor')
-var semver = require('semver')
+var forever = require('forever-monitor');
+var semver = require('semver');
 var getPid = require('ps-pid');
-
-var flatiron = require('flatiron')
-var mixin = flatiron.common.mixin
-var async = flatiron.common.async
-var rimraf = flatiron.common.rimraf
-
-var repositories = require('haibu-repo')
-var Repository = repositories.Repository
 
 var raft = require('../../raft')
 
-var Stats = require('./stats')
+var mixin = raft.common.mixin
+var async = raft.common.async
+var rimraf = raft.common.rimraf
 
-function Spawn(options) {
+var SnapShot = raft.SnapShot
+var Stats = require('./stats').Stats
+
+var Spawn = module.exports = function(meta) {
 	events.EventEmitter.call(this);
-	options = options || {};
 
-	this.maxRestart = options.maxRestart;
+	this.maxRestart = 2;
 	this.silent = true;
-	this.host = options.host || '127.0.0.1';
-	this.packageDir = options.packageDir
-	this.logsDir = options.logsDir
-	this.minUptime = typeof options.minUptime !== 'undefined' ? options.minUptime : 2000;
+	this.minUptime = 2000;
 
-	this.options = options
-	this.app = options.app
+	this.options = {}
+	this.meta = meta
+
 	this.env = {}
 	this._stage = 'START'
 
@@ -55,39 +49,35 @@ function Spawn(options) {
 //
 util.inherits(Spawn, events.EventEmitter);
 
-module.exports = Spawn
 function noop() {
 
 }
 
-Spawn.prototype.stage = function(stage) {
+Spawn.prototype.stage = function(stage, meta) {
 
+	stage = stage.toLocaleLowerCase()
 	this._stage = stage
-	this.emit(stage)
+	this.emit(stage, meta)
 }
 
-
-Spawn.prototype.init = function(app, callback) {
+Spawn.prototype.init = function(meta, callback) {
 	var self = this
-	var repo;
-	this.app = app
+	var snapshot;
 
 	this.stage('INIT')
-
 	try {
-		repo = this.repo = this.app instanceof repositories.Repository ? this.app : repositories.create(this.app, this.options)
+		snapshot = this.snapshot = new raft.SnapShot(meta)
 	} catch (ex) {
 		return callback(ex)
 	}
 
-	if ( repo instanceof Error) {
+	if ( snapshot instanceof Error) {
 		return callback(repo);
 	}
 
 };
 
 Spawn.prototype.reset = function() {
-
 
 	this.responded = false
 	this.errState = false;
@@ -97,12 +87,16 @@ Spawn.prototype.reset = function() {
 
 Spawn.prototype.setLogs = function() {
 
-	var file = this.repo.lgosDir + '/';
+	var file = this.snapshot.directories.logs + '/';
 	this.logs = {
 		err : file + this.uid + '.err.log',
 		out : file + this.uid + '.out.log',
 		npm : file + this.uid + '.npm.log'
 	}
+
+};
+
+Spawn.prototype.bootstrap = function(callback) {
 
 };
 
@@ -119,49 +113,28 @@ Spawn.prototype.trySpawn = function(callback) {
 
 		self.stage('REPOBOOTSTRAP')
 
-		self.repo.bootstrap(function(err, existed) {
+		self.snapshot.bootstrap(function(err, existed) {
 			if (err) {
 				return callback(err);
 			}
-			var file = self.repo.lgosDir + '/';
-			
-			self.logs = {
-				err : file + self.uid + '.err.log',
-				out : file + self.uid + '.out.log',
-				npm : file + self.uid + '.npm.log'
-			}
 
-			if (existed) {
-				return self.spawn(callback);
-			}
-			self.stage('REPOBOOTSTRAPFINISH')
-
-			self.repo.npmlog = fs.createWriteStream(self.logs.npm, {
-				flags : 'w',
-				encoding : null,
-				mode : 0666
-			})
-			self.repo.npmlog.write('NPM START....\n')
+			self.setLogs()
 
 			self.stage('REPOINIT')
 
-			self.repo.init(function(err, inited) {
+			self.snapshot.init(function(err, inited) {
 				if (err) {
 					return callback(err);
 				}
-				self.stage('REPOINITFINISH')
 
-				self.setEnv(function(err) {
+				self.setEnv()
+
+				self.spawn(function(err) {
 					if (err) {
 						return callback(err)
 					}
-					self.spawn(function(err) {
-						if (err) {
-							return callback(err)
-						}
-						self.stage('TRYSPAWNFINISH')
-					});
-				})
+					self.stage('TRYSPAWNFINISH')
+				});
 			})
 		});
 
@@ -170,10 +143,7 @@ Spawn.prototype.trySpawn = function(callback) {
 
 Spawn.prototype.installEngine = function(callback) {
 	this.stage('ENGINEINSTALL')
-	var app = this.app
-	var engine = (app.engines || app.engine || {
-		node : process.version
-	}).node;
+	var engine = this.meta.instance.engines.node;
 	var self = this
 	var engineDir = raft.directories.node
 
@@ -194,49 +164,31 @@ Spawn.prototype.installEngine = function(callback) {
 
 		self.options.carapaceBin = path.join(__dirname, 'haibu-carapace', 'bin', 'carapace');
 
-		self.stage('ENGINEINSTALLFINISH')
 		callback()
 	})
 }
 
-Spawn.prototype.setEnv = function(callback) {
+Spawn.prototype.setEnv = function() {
 
 	this.stage('SETENV')
 	var self = this
 
-	if (this.app.env)
-		mixin(this.env, this.app.env);
+	if (this.meta.env)
+		mixin(this.env, this.meta.env);
 	this.options.env = this.env;
-	raft.mongoose.Env.find({
-		user : this.app.user,
-		name : this.app.name
-	}, function(err, envs) {
-		if (err) {
-			return callback(err)
-		}
-		envs.forEach(function(_env) {
-			self.options.env[_env.key] = _env.value
-		})
-		self.stage('SETENVFINISH')
-		callback()
-	})
 };
 
 Spawn.prototype.spawn = function(callback) {
 	this.stage('SPAWN')
-	var repo = this.repo
-	var app = this.app
+	var snapshot = this.snapshot
 	var options = this.options
 	var self = this
-	var meta = {
-		name : app.name,
-		user : app.user
-	}
+	var meta = this.meta
 	var foreverOptions = {
 		fork : true,
 		silent : this.silent,
 		stdio : ['ipc', 'pipe', 'pipe'],
-		cwd : this.repo.homeDir,
+		cwd : snapshot.directories.home,
 		hideEnv : [],
 		env : this.env,
 		killTree : true,
@@ -244,7 +196,7 @@ Spawn.prototype.spawn = function(callback) {
 		killTTL : 0,
 		minUptime : this.minUptime,
 		command : this.options.command,
-		options : [this.options.carapaceBin].concat(['--plugin', 'net', this.app.scripts.start]),
+		options : [this.options.carapaceBin].concat(['--plugin', 'net', this.snapshot.scripts.start]),
 		'outFile' : this.logs.out,
 		'errFile' : this.logs.err
 	};
@@ -255,14 +207,9 @@ Spawn.prototype.spawn = function(callback) {
 		foreverOptions.max = this.maxRestart;
 	}
 
-	//
-	// Before we attempt to spawn, let's check if the startPath actually points to a file
-	// Trapping this specific error is useful as the error indicates an incorrect
-	// scripts.start property in the package.json
-	//
-	fs.stat(repo.startScript, function(err, stats) {
+	fs.stat(path.join(snapshot.directories.home, snapshot.scripts.start), function(err, stats) {
 		if (err) {
-			var err = new Error('package.json error: Package.json start script declared but not found ' + 'can\'t find starting script: ' + repo.app.scripts.start);
+			var err = new Error('package.json error: Package.json start script declared but not found ' + 'can\'t find starting script: ' + snapshot.scripts.start);
 			err.blame = {
 				type : 'user',
 				message : 'Package.json start script declared but not found'
@@ -270,35 +217,29 @@ Spawn.prototype.spawn = function(callback) {
 			return callback(err);
 		}
 
-		foreverOptions.options.push(repo.startScript);
+		foreverOptions.options.push(snapshot.scripts.start);
 		var carapaceBin = foreverOptions.options.shift();
-		self.drone = new forever.Monitor(carapaceBin, foreverOptions);
-		self.drone.on('error', function() {
-			//
-			// 'error' event needs to be caught, otherwise
-			// the haibu process will die
-			//
+		self.spawn = new forever.Monitor(carapaceBin, foreverOptions);
+		self.spawn.on('error', function() {
+
 		});
 
-		//
-		// Log data from `drone.stdout` to haibu
-		//
+		self.spawn.on('stdout', self.onStdout.bind(self));
+		self.spawn.on('stderr', self.onStderr.bind(self));
+		self.spawn.once('exit', self.onExit.bind(self));
+		self.spawn.once('error', self.onError.bind(self));
+		self.spawn.once('start', self.onChildStart.bind(self));
+		self.spawn.on('restart', self.onChildRestart.bind(self));
 
-		//
-		// Listen to the appropriate events and start the drone process.
-		//
-		self.drone.on('stdout', self.onStdout.bind(self));
-		self.drone.on('stderr', self.onStderr.bind(self));
-		self.drone.once('exit', self.onExit.bind(self));
-		self.drone.once('error', self.onError.bind(self));
-		self.drone.once('start', self.onChildStart.bind(self));
-		self.drone.on('restart', self.onChildRestart.bind(self));
+		self.spawn.on('message', self.onMessage.bind(self));
 
-		self.drone.on('message', self.onCarapacePort.bind(self));
+		if (self.meta.instance.worker) {
+			self.timeout = setTimeout(self.onTimeout.bind(self), 20000);
+		} else {
+			self.timeout = 0
+		}
 
-		self.timeout = setTimeout(self.onTimeout.bind(self), 20000);
-
-		self.drone.start();
+		self.spawn.start();
 
 		self.stage('SPAWNSTART')
 
@@ -312,29 +253,29 @@ Spawn.prototype.restart = function() {
 Spawn.prototype.restart = function(callback) {
 	var self = this
 
-	this.drone.removeListener('exit', self.onExit.bind(self));
-	self.drone.removeListener('stdout', self.onStdout.bind(self));
-	self.drone.removeListener('stderr', self.onStderr.bind(self));
-	self.drone.removeListener('restart', self.onChildRestart.bind(self));
-	self.drone.removeListener('message', self.onCarapacePort.bind(self));
+	this.spawn.removeListener('exit', self.onExit.bind(self));
+	self.spawn.removeListener('stdout', self.onStdout.bind(self));
+	self.spawn.removeListener('stderr', self.onStderr.bind(self));
+	self.spawn.removeListener('restart', self.onChildRestart.bind(self));
+	self.spawn.removeListener('message', self.onMessage.bind(self));
 
-	this.drone.once('exit', function() {
+	this.spawn.once('exit', function() {
 		self.trySpawn(callback)
 	})
-	this.drone.stop();
+	this.spawn.stop();
 };
 
 Spawn.prototype.onStdout = function onStdout(data) {
 	data = data.toString();
-
 	if (!this.responded) {
 		this.stdout = this.stdout.concat(data.split('\n').filter(function(line) {
 			return line.length > 0
 		}));
 	}
+	this.emit('stdout', data)
 }
 //
-// Log data from `drone.stderr` to haibu
+// Log data from `spawn.stderr` to haibu
 //
 Spawn.prototype.onStderr = function onStderr(data) {
 	data = data.toString();
@@ -343,6 +284,7 @@ Spawn.prototype.onStderr = function onStderr(data) {
 			return line.length > 0
 		}));
 	}
+	this.emit('stderr', data)
 }
 //
 // If the `forever.Monitor` instance emits an error then
@@ -361,20 +303,20 @@ Spawn.prototype.onError = function onError(err) {
 		//
 		// Remove listeners to related events.
 		//
-		this.drone.removeListener('exit', this.onExit.bind(this));
-		this.drone.removeListener('message', this.onCarapacePort.bind(this));
+		this.spawn.removeListener('exit', this.onExit.bind(this));
+		this.spawn.removeListener('message', this.onMessage.bind(this));
 
-		this.drone.removeListener('stdout', this.onStdout.bind(this));
-		this.drone.removeListener('stderr', this.onStderr.bind(this));
+		this.spawn.removeListener('stdout', this.onStdout.bind(this));
+		this.spawn.removeListener('stderr', this.onStderr.bind(this));
+
 		clearTimeout(this.timeout);
 	}
 }
 //
-// When the carapace provides the port that the drone
+// When the carapace provides the port that the spawn
 // has bound to then respond to the callback
 //
-Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
-	console.log(this.responded, info && info.event === 'port', info)
+Spawn.prototype.onMessage = function onMessage(info) {
 	if (!this.responded && info && info.event === 'port') {
 
 		this.stage('SPAWNPORT')
@@ -385,24 +327,20 @@ Spawn.prototype.onCarapacePort = function onCarapacePort(info) {
 			port : info.data.port
 		};
 
-		this.drone.minUptime = 0;
+		this.spawn.minUptime = 0;
 
-		this.npmput = []
-		//this.LogHarvester()
 		//
 		// Remove listeners to related events
 		//
-		this.drone.removeListener('exit', this.onExit.bind(this));
-		this.drone.removeListener('error', this.onError.bind(this));
+		this.spawn.removeListener('exit', this.onExit.bind(this));
+		this.spawn.removeListener('error', this.onError.bind(this));
 
-		this.drone.removeListener('stdout', this.onStdout.bind(this));
-		this.drone.removeListener('stderr', this.onStderr.bind(this));
 		clearTimeout(this.timeout);
-		self.stage('START')
+		this.stage('START')
 	}
 }
 //
-// When the drone starts, update the result for monitoring software
+// When the spawn starts, update the result for monitoring software
 //
 Spawn.prototype.onChildStart = function onChildStart(monitor, data) {
 
@@ -413,21 +351,34 @@ Spawn.prototype.onChildStart = function onChildStart(monitor, data) {
 	this.data = data
 	this.pid = monitor.childData.pid
 	this.stats = new Stats({
-		name : this.app.name,
-		user : this.app.user,
+		name : this.meta.package.name,
+		user : this.meta.user.username,
 		pid : this.pid,
 		uid : this.uid,
-		dir : this.repo.appDir
+		dir : this.snapshot.directories.home
 	})
+	if (this.meta.instance.worker) {
+
+		this.spawn.minUptime = 0;
+
+		//
+		// Remove listeners to related events
+		//
+		this.spawn.removeListener('exit', this.onExit.bind(this));
+		this.spawn.removeListener('error', this.onError.bind(this));
+
+		clearTimeout(this.timeout);
+		this.stage('START')
+	}
 }
 //
-// When the drone stops, update the result for monitoring software
+// When the spawn stops, update the result for monitoring software
 //
 Spawn.prototype.onChildRestart = function onChildRestart(monitor, data) {
 
 }
 //
-// If the drone exits prematurely then respond with an error
+// If the spawn exits prematurely then respond with an error
 // containing the data we receieved from `stderr`
 //
 Spawn.prototype.onExit = function onExit(data) {
@@ -435,7 +386,7 @@ Spawn.prototype.onExit = function onExit(data) {
 		this.stage('SPAWNEXIT')
 		this.errState = true;
 		this.responded = true;
-		var error = new Error('Error spawning drone Script prematurely exited');
+		var error = new Error('Error spawning spawn Script prematurely exited');
 		error.blame = {
 			type : 'user',
 			message : 'Script prematurely exited'
@@ -447,36 +398,42 @@ Spawn.prototype.onExit = function onExit(data) {
 		//
 		// Remove listeners to related events.
 		//
-		this.drone.removeListener('error', this.onError.bind(this));
-		this.drone.removeListener('message', this.onCarapacePort.bind(this));
+		this.spawn.removeListener('error', this.onError.bind(this));
+		this.spawn.removeListener('message', this.onMessage.bind(this));
 		clearTimeout(this.timeout);
 	} else {
-		//this.LogHarvesterStopWatch()
+		if (this.kill) {
+			this.emit('stop')
+			this.snapshot.clean()
+		}
 	}
-	this.stats ? this.stats.kill(function() {
-
-	}) : null
+	this.stats ? this.stats.kill() : null
 }
 
 Spawn.prototype.onTimeout = function onTimeout() {
 
-	this.stage('SPAWNTIMEOUT')
-
-	this.drone.removeListener('exit', this.onExit.bind(this));
-	this.drone.stop();
-	var error = new Error('Error spawning drone Script took too long to listen on a socket');
+	this.spawn.removeListener('exit', this.onExit.bind(this));
+	this.spawn.stop();
+	var error = new Error('Error spawning spawn Script took too long to listen on a socket');
 	error.blame = {
 		type : 'user',
 		message : 'Script took too long to listen on a socket'
 	};
 	error.stdout = this.stdout.join('\n');
-	error.stderr = th
+	error.stderr = this.stderr.join('\n');
 	this.emit('error', error)
 }
 //
-// When the drone starts, update the result for monitoring software
+// When the spawn starts, update the result for monitoring software
 //
-Spawn.prototype.result = function onChildStart() {
+Spawn.prototype.stop = function() {
+	this.kill = true
+	this.monitor.stop(true)
+}
+//
+// When the spawn starts, update the result for monitoring software
+//
+Spawn.prototype.result = function() {
 	return {
 		socket : this.socket,
 		uid : this.uid
