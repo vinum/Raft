@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.3.2",
+	"version": "0.3.8",
 	"description": "Open Source PaaS built on Node.JS",
 	"main": "raft.js",
 	"scripts": {
@@ -27,11 +27,11 @@
 		"knox": "0.0.11",
 		"haibu-repo": "*",
 		"ps-pid": "*",
+		"request": "*",
 		"ejs": "*",
-		"bcrypt": "0.7.3",
-		"bouncy": "1.x",
+		"bouncy": "2.x",
 		"nssocket": "0.3.8",
-		"express": "2.x ",
+		"express": "2.x",
 		"fstream": "*",
 		"fstream-npm": "*",
 		"socket.io-client": "*",
