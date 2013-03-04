@@ -1,3 +1,10 @@
 var raft = require('../')
 
-console.log(raft)
+
+
+
+
+
+raft.boot(function() {
+
+})

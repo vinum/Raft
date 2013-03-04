@@ -1,0 +1,11 @@
+{
+	"name": "demo",
+	"domain": "demo.mangoraft.com",
+	"scripts": {
+		"start": "web.js"
+	},
+	"version": "0.0.0",
+	"dependencies": {
+		"connect": "*"
+	}
+}
