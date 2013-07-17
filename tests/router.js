@@ -1,8 +1,11 @@
 var cluster = require('cluster')
-var Router = require('../raft/common/router').Router
+var Router = require('../').Router
 var http = require('http')
 
 http.createServer(function(req, res) {
+	res.writeHead(200, {
+		'connection' : 'closed'
+	});
 	res.write(JSON.stringify(req.headers, null, 4))
 	res.end('beep boop\n');
 }).listen(8001);
@@ -11,9 +14,9 @@ r.start()
 r.fork(function() {
 	r.addSpawn({
 		uid : 'dsfdsf',
-		host : '192.168.1.101',
+		host : '127.0.0.1',
 		port : 8001
 	}, {
-		domain : '192.168.1.101'
+		domain : 'localhost'
 	})
 })

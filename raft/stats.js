@@ -37,7 +37,7 @@ Stats.prototype.timmer = function() {
 		if (err || !loadData.pcpu || self.isKill !== false) {
 			return
 		}
-		exec("du -s /home/bob", function(err, resp, b) {
+		exec("du -s " + self.options.dir, function(err, resp, b) {
 			self.data = {
 				cpu : Number(loadData.pcpu),
 				memory : Number(loadData.rssize),

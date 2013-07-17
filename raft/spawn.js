@@ -398,7 +398,7 @@ Spawn.prototype.onChildStart = function onChildStart(monitor, data) {
 		dir : this.snapshot.directories.home
 	})
 	this.stats.on('update', function(stats) {
-
+console.log(stats)
 		if (stats.memory > self.instance.max.memory) {
 			self.sendEvent('build::max::memory', {
 				used : stats.memory,

@@ -116,11 +116,20 @@ Router.prototype.handle = function(req, res, bounce) {
 		port : spawn.port,
 		host : spawn.host
 	})
-	
+	req.on('end', function() {
+		console.log('req', 'baz');
+	});
+	res.on('end', function() {
+		console.log('res', 'baz');
+	});
+	socket.on('end', function() {
+		console.log('bar', 'baz');
+	});
+		console.log('start', 'baz');
 	bounce({
 		stream : socket,
 		headers : {
-			portsss : spawn.port,
+			connection : 'end',
 			hostsss : spawn.host
 		}
 	});

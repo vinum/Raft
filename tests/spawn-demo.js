@@ -19,8 +19,8 @@ app.use(function(req, res) {
 });
 
 http.createServer(app).listen(3000);
-var urls = ['http://localhost:3000/demo2.tar.gz']
-var names = ['demo', 'demo2']
+var urls = ['http://localhost:3000/demo.tar.gz']
+var names = ['demo']
 var meta = {
 	snapshot : {
 		version : 67,
@@ -37,10 +37,14 @@ var meta = {
 		engines : {
 			node : '>=0.6'
 		},
+		max : {
+			memory : 19000,
+			disk : 1900
+		},
 		script : 'web.js'
 	},
 	package : {
-		name : 'demo2'
+		name : 'demo'
 	},
 	domains : ['192.168.1.101', 'localhost'],
 	user : {
@@ -79,6 +83,9 @@ function trySpawn() {
 	raft.on(spawn.uid + '::spawn::snapshot::*', function(data) {
 		raft.log('snapshot', spawn.uid, 'Snapshot event:' + this.event)
 	});
+	spawn.onAny(function(a) {
+		//console.log(a)
+	})
 	return spawn;
 }
 
