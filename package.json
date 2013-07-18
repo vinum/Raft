@@ -1,38 +1,16 @@
 {
 	"name": "raft",
-	"version": "0.3.10",
+	"version": "0.4.0",
 	"description": "Open Source PaaS built on Node.JS",
-	"main": "raft.js",
+	"main": "index.js",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/MangoRaft/Raft.git"
 	},
 	"dependencies": {
-		"nconf": "*",
-		"eventemitter2": "*",
-		"mkdirp": "*",
-		"flatiron": "0.2.8",
-		"forever-monitor": "1.1.0",
-		"npm": "1.1.x",
-		"semver": "1.0.13",
-		"winston": "0.6.2",
-		"ps-pid": "*",
-		"request": "*",
-		"ejs": "*",
-		"bouncy": "3.x",
-		"nssocket": "*",
-		"tar": "*",
-		"async": "0.1.x",
-		"eventemitter2": "0.4.x",
-		"optimist": "0.3.x",
-		"semver": "1.0.x",
-		"optimist": "*",
-		"daemon": "*",
-		"axon": "*",
-		"cli-color": "*",
-		"express": "2.x"
+		
 	},
 	"homepage": "http://raft.mangoraft.com",
 	"author": "Tim <tim.dickinson@mangoraft.com>",
-	"license": "BSD"
+	"license": "MIT"
 }
