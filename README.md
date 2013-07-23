@@ -19,7 +19,7 @@ Run more than one instance of your application. A global footprint is no problem
 ##Open-source
 All the code is open source. If you would like to run your own copy of raft you can. Even better then the git repo is that you can install it all with one command. "npm install raft-hooks -g" this will install a program called hooks. Take a look at "hooks -h" for help on how to use the client.
 ## Status
-Lots of work is been done on Raft. If you would like to know more please drop us a line!
+Lots of work is been done on Raft. If you would like to know more please drop me a line!
 
 ## Core
 The core features of raft are a set of hooks that allow ease of adding more Feature latter one. With a distributed process module adding and removing part is no problem
@@ -31,7 +31,7 @@ The core features of raft are a set of hooks that allow ease of adding more Feat
 | Spawner    | incomplete    | Working copy of the spawn/spawner. All feature are in place    |
 | [Logger](https://github.com/MangoRaft/Logger)    | incomplete    | Full package logging in real-time.    |
 | [Stats](https://github.com/MangoRaft/Spawn-Stats)    | incomplete    | Load and memory usage for each spawn.    |
-| Deploy/SnapShot Server    | incomplete    | Deploy server creating each package snapshot.    |
+| Stage/SnapShot    | incomplete    | Deploy server creating each package snapshot.    |
 | API Server    | incomplete    | REST api server for managing user packages    |
 
 ## Hooks
