@@ -136,7 +136,7 @@ $ nats-server --port 4222 --user nats_name --pass nats_pass
 ###Step 3. 
   Install the log server
 ```
-$ sudo npm install raft-logger@0.0.4
+$ sudo npm install raft-logger@0.0.4 -g
 ```
 ###Step 3. 
   Run the log server
@@ -152,7 +152,7 @@ $ log-cli localhost 3001
 ###Step 3. 
   Install the Dea
 ```
-$ sudo npm install dea@0.0.1
+$ sudo npm install dea@0.0.1 -g
 ```
 ###Step 3. 
   Run the dea
@@ -162,7 +162,7 @@ $ dea /path/to/config/file.json
 ###Step 4. 
   Install the router
 ```
-$ sudo npm install route-machine@0.0.2
+$ sudo npm install route-machine@0.0.2 -g
 ```
 ###Step 5. 
   Run the router. to listen on port 80 run with sudo
