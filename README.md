@@ -13,9 +13,61 @@ Raft gives you a provision of CPU, memory, disk space and bandwidth. From this t
 Sites and services ranging from the weekend projects to large scale production sites are able to take advantage of raft. 
 
 
-## NOTES
+## Setup
+A few things are need to get core modules running.
+NOTE: I have tested the install on Fedora 18/19 and Ubuntu 13x running node v0.8.19 and npm v1.2.10
 
-## Configure
+###Step 1. 
+  Install nats through ruby gem
+
+
+```$ gem install nats```
+
+###Step 2. 
+  Start the nats server
+
+```$ nats-server --port 4222 --user nats_name --pass nats_pass```
+
+###Step 3. 
+  Install the log server
+
+```$ sudo npm install raft-logger@0.0.1```
+
+###Step 3. 
+  Run the log server
+
+```$ cd /my/log/folder```
+```$ log-server```
+
+###Step 3. 
+  At this point you want to open the log client
+
+```$ log-cli localhost 3001```
+
+###Step 3. 
+  Install the Dea
+
+`$ sudo npm install dea@0.0.1```
+
+###Step 3. 
+  Run the dea
+
+`$ dea /path/to/config/file.json```
+
+###Step 4. 
+  Install the router
+
+```$ sudo npm install route-machine@0.0.2```
+
+###Step 5. 
+  Run the router. to listen on port 80 run with sudo
+
+```$ sudo routem /path/to/config/file.json```
+
+
+If everything install and ran correctly you should have a running nodejs application hosting system. Now running system vs usable system are two things at todays date (July/27/2013) some parts are still missing. Note that the Stager and API/Client have no code yet.
+
+## Confi
 
 ```json
 
