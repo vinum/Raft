@@ -7,12 +7,77 @@
 	
 
 
-#Raft - Open-Source PaaS
+#Raft
 The idea behind raft is to give the node community a fully-featured Platform as a Service (PaaS) for inhouse work. 
 Raft gives you a provision of CPU, memory, disk space and bandwidth. From this the sky's the limit in what can be build. 
 Sites and services ranging from the weekend projects to large scale production sites are able to take advantage of raft. 
-Full instances of a UNIX system is available from with in the running allocation. Each application is run in its own chroot jail (NOT WORKING).
-Keeping all other applications sharing the system safe.
+
+
+## NOTES
+
+## Configure
+
+```json
+
+	{
+		"router": {
+			"http": {
+				"port": 8000
+			}
+		},
+		"nats": {
+			"user": "3005",
+			"pass": "3005",
+			"port": 3005,
+			"host": "localhost"
+		},
+		"logs": {
+			"log": {
+				"port": 3000,
+				"host": "localhost"
+			},
+			"view": {
+				"port": 3001,
+				"host": "localhost"
+			}
+		},
+		"dea": {
+			"base_dir": "/home/fedora/raft/development/dea/raft",
+			"local_route": "127.0.0.1",
+			"filer_port": 12345,
+			"intervals": {
+				"heartbeat": 10,
+				"advertise": 5
+			},
+			"logging": {
+				"level": "debug"
+			},
+			"multi_tenant": true,
+			"max_memory": 4096,
+			"secure": false,
+			"enforce_ulimit": false,
+			"prod": false,
+			"force_http_sharing": true,
+			"runtimes": {
+				"node08": {
+					"executable": "node",
+					"version": "0.8.2",
+					"version_flag": "-v",
+					"environment": {
+						"debug_env": {
+							"run": {
+								"NODE_ARGS": "--debug=$VCAP_DEBUG_PORT",
+								"suspend": {
+									"NODE_ARGS": "--debug-brk=$VCAP_DEBUG_PORT"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+```
 
 
 ## Core
