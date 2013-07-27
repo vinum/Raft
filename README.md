@@ -28,8 +28,7 @@ Sites and services ranging from the weekend projects to large scale production s
 		"nats": {
 			"user": "3005",
 			"pass": "3005",
-			"port": 3005,
-			"host": "localhost"
+			"url": "nats://localhost:4222/"
 		},
 		"logs": {
 			"log": {
@@ -42,7 +41,7 @@ Sites and services ranging from the weekend projects to large scale production s
 			}
 		},
 		"dea": {
-			"base_dir": "/home/fedora/raft/development/dea/raft",
+			"base_dir": "/home/fedora/raft",
 			"local_route": "127.0.0.1",
 			"filer_port": 12345,
 			"intervals": {
