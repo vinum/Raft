@@ -1,4 +1,3 @@
-
 #Raft
 
 	__________    _____  ______________________
@@ -24,6 +23,10 @@ Thank you nats and thanks vcap for the turning point in my thinkings of how to b
 
 ## Setup
 A few things are need to get core modules running.
+
+To give you an idea of how the system work take a look at this image
+<a href="http://imgur.com/RfPq4ph"><img src="http://i.imgur.com/RfPq4ph.png" title="Hosted by imgur.com"/></a>
+
 
 NOTE: I have tested the install on Fedora 18/19 and Ubuntu 13x running node v0.8.19 and npm v1.2.10
 
