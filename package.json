@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.4.4",
+	"version": "0.4.5",
 	"description": "Open Source PaaS built on Node.JS",
 	"main": "index.js",
 	"repository": {
@@ -10,7 +10,8 @@
 	"dependencies": {
 		"mkdirp": "0.3.x",
 		"flatiron": "0.3.x",
-		"raft-nats": "0.0.x"
+		"raft-nats": "0.0.x",
+		"nconf": "0.6.9"
 	},
 	"homepage": "http://raft.mangoraft.com",
 	"author": "Tim <tim.dickinson@mangoraft.com>",
