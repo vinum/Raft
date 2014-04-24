@@ -1,6 +1,6 @@
 {
 	"name": "raft",
-	"version": "0.4.8",
+	"version": "0.1.3",
 	"description": "Open Source PaaS built on Node.JS",
 	"main": "index.js",
 	"repository": {
@@ -10,10 +10,11 @@
 	"dependencies": {
 		"mkdirp": "0.3.x",
 		"flatiron": "0.3.x",
-		"raft-nats": "0.0.x",
+		"raft-nats": "0.1.x",
+		"eventemitter2": "0.4.x",
 		"nconf": "0.6.9"
 	},
-	"homepage": "http://raft.mangoraft.com",
-	"author": "Tim <tim.dickinson@mangoraft.com>",
+	"homepage": "http://raft.mangoraft.ca",
+	"author": "Tim <mangoraft@gmail.com>",
 	"license": "MIT"
 }
